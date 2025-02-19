@@ -11,6 +11,33 @@ library(pROC)
 
 
 #### -- Data preparation -- ####
+# Function to load and combine CAMELIA model outputs
+load_camelia_predictions <- function(model_type, pred_type) {
+  files <- paste0("results/CAMELIA_", model_type, "/mlp1_bce_msle/fold_", 1:4, "/prediction_", pred_type, ".csv")
+  combined_data <- do.call(rbind, lapply(files, read.csv, header = TRUE, row.names = 1))
+  combined_data[rownames(survey_obs), ]  # Filter by observed survey data
+}
+
+
+#### -- PRR -- ####
+prr <- function(Y_hat, richesse) {
+  sites <- data.frame("ID"=rownames(Y_hat))
+  richesse <- left_join(sites, richesse, by="ID")
+  data_prr <- Y_hat
+  for (s in 1:nrow(Y_hat)) {
+    max <- length(which(Y_hat[s,] > 0))
+    if (round(richesse[s,2]) < max) {
+      sorted_row <- order(as.numeric(Y_hat[s,]), decreasing = TRUE)[1:round(richesse[s,2])]
+    } else {
+      sorted_row <- which(Y_hat[s,] > 0)
+    }
+    data_prr[s,] <- 0
+    data_prr[s,sorted_row] <- 1
+    print(s)
+  }
+  return(data_prr)
+}
+
 # This function returns an array of data that will be used to calculate CM and CSTD.
 data_table <- function(data){
   data_table <- data.frame("ID"=rownames(data), data)
@@ -66,22 +93,18 @@ CSTD <-  function(data){
   return(CSTD)
 }
 
-#### -- PRR -- ####
-prr <- function(Y_hat, richesse) {
-  sites <- data.frame("ID"=rownames(Y_hat))
-  richesse <- left_join(sites, richesse, by="ID")
-  data_prr <- Y_hat
-  for (s in 1:nrow(Y_hat)) {
-    max <- length(which(Y_hat[s,] > 0))
-    if (round(richesse[s,2]) < max) {
-      sorted_row <- order(as.numeric(Y_hat[s,]), decreasing = TRUE)[1:round(richesse[s,2])]
-    } else {
-      sorted_row <- which(Y_hat[s,] > 0)
-    }
-    data_prr[s,] <- 0
-    data_prr[s,sorted_row] <- 1
-    print(s)
-  }
-  return(data_prr)
-}
 
+
+# Compute community indices
+compute_indices <- function(predictions, prefix) {
+  CM_data <- CM(predictions)
+  colnames(CM_data) <- c("ID", paste0("LNC_", prefix), paste0("SLA_", prefix), paste0("PLH_", prefix))
+  
+  CSTD_data <- CSTD(predictions)
+  colnames(CSTD_data) <- c("ID", paste0("LNC_", prefix), paste0("SLA_", prefix), paste0("PLH_", prefix))
+  
+  SR_data <- data.frame(ID = rownames(predictions))
+  SR_data[[paste0("SR_", prefix)]] <- rowSums(predictions)
+  
+  list(CM = CM_data, CSTD = CSTD_data, SR = SR_data)
+}

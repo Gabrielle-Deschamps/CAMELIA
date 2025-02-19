@@ -15,364 +15,226 @@ metadata <- read.csv("data/metadata.csv", header = TRUE, row.names = 1)
 survey_obs <- read.csv("data/survey_obs.csv", header = TRUE, row.names = 1)
 traits <- read.csv("data/traits.csv", header = TRUE, row.names = 1)
 
-## SSDM
-sdm_raw_1 <- read.csv("results/sdm_raw_1.csv", header = TRUE, row.names = 1)
-sdm_raw_2 <- read.csv("results/sdm_raw_2.csv", header = TRUE, row.names = 1)
-sdm_raw_3 <- read.csv("results/sdm_raw_3.csv", header = TRUE, row.names = 1)
-sdm_raw_4 <- read.csv("results/sdm_raw_4.csv", header = TRUE, row.names = 1)
-sdm_raw <- rbind(sdm_raw_1, sdm_raw_2, sdm_raw_3, sdm_raw_4)
-sdm_raw <- sdm_raw[rownames(survey_obs), ]
+## MEM
+# Load precomputed community indices from MEM and Proxy
+CM_mem <- read.csv("data/community_indices/CM_mem.csv", header = TRUE, row.names = 1)
+colnames(CM_mem) <- paste0(colnames(CM_mem), "_mem")
+CM_mem$ID <- rownames(CM_mem)
 
-sdm_opth_1 <- read.csv("results/sdm_bin_opth_1.csv", header = TRUE, row.names = 1)
-sdm_opth_2 <- read.csv("results/sdm_bin_opth_2.csv", header = TRUE, row.names = 1)
-sdm_opth_3 <- read.csv("results/sdm_bin_opth_3.csv", header = TRUE, row.names = 1)
-sdm_opth_4 <- read.csv("results/sdm_bin_opth_4.csv", header = TRUE, row.names = 1)
-sdm_opth <- rbind(sdm_opth_1, sdm_opth_2, sdm_opth_3, sdm_opth_4)
-sdm_opth <- sdm_opth[rownames(survey_obs), ]
+CSTD_mem <- read.csv("data/community_indices/CSTD_mem.csv", header = TRUE, row.names = 1)
+colnames(CSTD_mem) <- paste0(colnames(CSTD_mem), "_mem")
+CSTD_mem$ID <- rownames(CSTD_mem)
 
 SR_mem <- read.csv("data/community_indices/SR_mem.csv", header = TRUE, row.names = 1)
-colnames(SR_mem) <- c('SR_mem')
+colnames(SR_mem) <- paste0(colnames(SR_mem), "_mem")
 SR_mem$ID <- rownames(SR_mem)
+
+## PROXY
+### PROxy construction :
+#CM_proxy <- data.frame("PLH_proxy"= CM_obs$PLH+runif(4463, min = -30*mean(CM_obs$PLH)/100, max =30*mean(CM_obs$PLH)/100),
+#                       "SLA_proxy"=CM_obs$SLA+runif(4463, min = -30*mean(CM_obs$SLA)/100, max =30*mean(CM_obs$SLA)/100),
+#                       "LNC_proxy"=CM_obs$LNC+runif(4463, min = -30*mean(CM_obs$LNC)/100, max =30*mean(CM_obs$LNC)/100),
+#                       "ID"=CM_obs$ID)
+#
+#CSTD_proxy <- data.frame("PLH_proxy"=CSTD_obs$PLH+runif(4463, min = -30*mean(CSTD_obs$PLH)/100, max =30*mean(CSTD_obs$PLH)/100),
+#                       "SLA_proxy"=CSTD_obs$SLA+runif(4463, min = -30*mean(CSTD_obs$SLA)/100, max =30*mean(CSTD_obs$SLA)/100),
+#                       "LNC_proxy"=CSTD_obs$LNC+runif(4463, min = -30*mean(CSTD_obs$LNC)/100, max =30*mean(CSTD_obs$LNC)/100),
+#                       "ID"=CSTD_obs$ID)
+#
+#SR_proxy <- data.frame("SR_proxy"=SR_obs$SR + runif(4463, min=-30*mean(SR_obs$SR)/100,max=30*mean(SR_obs$SR)/100),
+#                       "ID"=CSTD_obs$ID)
+#
+#write.csv(CM_proxy, file="data/community_indices/CM_proxy.csv")
+#write.csv(CSTD_proxy, file="data/community_indices/CSTD_proxy.csv")
+#write.csv(SR_proxy, file="data/community_indices/SR_proxy.csv")
+
+CM_proxy <- read.csv("data/community_indices/CM_proxy.csv", header = TRUE, row.names = 1)
+colnames(CM_proxy) <- paste0(colnames(CM_proxy), "_proxy")
+CM_proxy$ID <- rownames(CM_proxy)
+
+CSTD_proxy <- read.csv("data/community_indices/CSTD_proxy.csv", header = TRUE, row.names = 1)
+colnames(CSTD_proxy) <- paste0(colnames(CSTD_proxy), "_proxy")
+CSTD_proxy$ID <- rownames(CSTD_proxy)
+
+SR_proxy <- read.csv("data/community_indices/SR_proxy.csv", header = TRUE, row.names = 1)
+colnames(SR_proxy) <- paste0(colnames(SR_proxy), "_proxy")
+SR_proxy$ID <- rownames(SR_proxy)
+
+## SSDM
+sdm_raw_list <- lapply(1:4, function(i) read.csv(paste0("results/sdm_raw_", i, ".csv"), header = TRUE, row.names = 1))
+sdm_raw <- do.call(rbind, sdm_raw_list)
+sdm_raw <- sdm_raw[rownames(survey_obs), ]
+
+sdm_opth_list <- lapply(1:4, function(i) read.csv(paste0("results/sdm_bin_opth_", i, ".csv"), header = TRUE, row.names = 1))
+sdm_opth <- do.call(rbind, sdm_opth_list)
+sdm_opth <- sdm_opth[rownames(survey_obs), ]
+
 sdm_prr <- prr(sdm_raw, SR_mem)
 
 ## CAMELIA PREDICTIONS
 ### camelia obs
-camelia_obs_raw1 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_1/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_obs_raw2 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_2/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_obs_raw3 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_3/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_obs_raw4 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_4/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_obs_raw <- rbind(camelia_obs_raw1, camelia_obs_raw2, camelia_obs_raw3, camelia_obs_raw4)
-camelia_obs_raw <- camelia_obs_raw[rownames(survey_obs), ]
-
-camelia_obs_opth1 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_1/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_obs_opth2 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_2/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_obs_opth3 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_3/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_obs_opth4 <- read.csv("results/CAMELIA_OBS/mlp1_bce_msle/fold_4/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_obs_opth <- rbind(camelia_obs_opth1, camelia_obs_opth2, camelia_obs_opth3, camelia_obs_opth4)
-camelia_obs_opth <- camelia_obs_opth[rownames(survey_obs), ]
-
+camelia_obs_raw <- load_camelia_predictions("OBS", "raw")
+camelia_obs_opth <- load_camelia_predictions("OBS", "opth")
 camelia_obs_prr <- prr(camelia_obs_raw, SR_mem)
 
 ### camelia mem
-camelia_mem_raw1 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_1/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_mem_raw2 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_2/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_mem_raw3 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_3/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_mem_raw4 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_4/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_mem_raw <- rbind(camelia_mem_raw1, camelia_mem_raw2, camelia_mem_raw3, camelia_mem_raw4)
-camelia_mem_raw <- camelia_mem_raw[rownames(survey_obs), ]
-
-camelia_mem_opth1 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_1/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_mem_opth2 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_2/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_mem_opth3 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_3/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_mem_opth4 <- read.csv("results/CAMELIA_mem/mlp1_bce_msle/fold_4/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_mem_opth <- rbind(camelia_mem_opth1, camelia_mem_opth2, camelia_mem_opth3, camelia_mem_opth4)
-camelia_mem_opth <- camelia_mem_opth[rownames(survey_obs), ]
-
+camelia_mem_raw <- load_camelia_predictions("mem", "raw")
+camelia_mem_opth <- load_camelia_predictions("mem", "opth")
 camelia_mem_prr <- prr(camelia_mem_raw, SR_mem)
 
 ### camelia proxy
-camelia_proxy_raw1 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_1/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_proxy_raw2 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_2/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_proxy_raw3 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_3/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_proxy_raw4 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_4/prediction_raw.csv", header = TRUE, row.names = 1)
-camelia_proxy_raw <- rbind(camelia_proxy_raw1, camelia_proxy_raw2, camelia_proxy_raw3, camelia_proxy_raw4)
-camelia_proxy_raw <- camelia_proxy_raw[rownames(survey_obs), ]
-
-camelia_proxy_opth1 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_1/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_proxy_opth2 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_2/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_proxy_opth3 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_3/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_proxy_opth4 <- read.csv("results/CAMELIA_proxy/mlp1_bce_msle/fold_4/prediction_opth.csv", header = TRUE, row.names = 1)
-camelia_proxy_opth <- rbind(camelia_proxy_opth1, camelia_proxy_opth2, camelia_proxy_opth3, camelia_proxy_opth4)
-camelia_proxy_opth <- camelia_proxy_opth[rownames(survey_obs), ]
-
+camelia_proxy_raw <- load_camelia_predictions("proxy", "raw")
+camelia_proxy_opth <- load_camelia_predictions("proxy", "opth")
 camelia_proxy_prr <- prr(camelia_proxy_raw, SR_mem)
 
 # COMMUNITY INDICES
-## OBS
-CM_obs <- CM(survey_obs)
-colnames(CM_obs)=c("ID","LNC_obs", "SLA_obs","PLH_obs")
-CSTD_obs <- CSTD(survey_obs)
-colnames(CSTD_obs)=c("ID","LNC_obs", "SLA_obs","PLH_obs")
-SR_obs <- data.frame("ID"=rownames(survey_obs), "SR_obs"=rowSums(survey_obs))
+# Compute indices for all datasets
+indices_obs <- compute_indices(survey_obs, "obs")
+indices_sdm_raw <- compute_indices(sdm_raw, "sdm_raw")
+indices_sdm_opth <- compute_indices(sdm_opth, "sdm_opth")
+indices_sdm_prr <- compute_indices(sdm_prr, "sdm_prr")
+indices_camelia_obs_raw <- compute_indices(camelia_obs_raw, "camelia_obs_raw")
+indices_camelia_obs_opth <- compute_indices(camelia_obs_opth, "camelia_obs_opth")
+indices_camelia_obs_prr <- compute_indices(camelia_obs_prr, "camelia_obs_prr")
+indices_camelia_mem_raw <- compute_indices(camelia_mem_raw, "camelia_mem_raw")
+indices_camelia_mem_opth <- compute_indices(camelia_mem_opth, "camelia_mem_opth")
+indices_camelia_mem_prr <- compute_indices(camelia_mem_prr, "camelia_mem_prr")
+indices_camelia_proxy_raw <- compute_indices(camelia_proxy_raw, "camelia_proxy_raw")
+indices_camelia_proxy_opth <- compute_indices(camelia_proxy_opth, "camelia_proxy_opth")
+indices_camelia_proxy_prr <- compute_indices(camelia_proxy_prr, "camelia_proxy_prr")
 
-## SSDM
-CM_sdm_raw <- CM(sdm_raw)
-colnames(CM_sdm_raw)=c("ID","LNC_sdm_raw", "SLA_sdm_raw","PLH_sdm_raw")
-CSTD_sdm_raw <- CSTD(sdm_raw)
-colnames(CSTD_sdm_raw)=c("ID","LNC_sdm_raw", "SLA_sdm_raw","PLH_sdm_raw")
-SR_sdm_raw <- data.frame("ID"=rownames(sdm_raw), "SR_sdm_raw"=rowSums(sdm_raw))
+# Merge CM indices for all methods
+idx <- "CM"
+CM_tot_raw <- left_join(indices_obs[[idx]], indices_sdm_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_raw[[idx]], by = "ID") %>%
+  left_join(CM_mem, by = "ID") %>%
+  left_join(CM_proxy, by = "ID")
 
-CM_sdm_opth <- CM(sdm_opth)
-colnames(CM_sdm_opth)=c("ID","LNC_sdm_opth", "SLA_sdm_opth","PLH_sdm_opth")
-CSTD_sdm_opth <- CSTD(sdm_opth)
-colnames(CSTD_sdm_opth)=c("ID","LNC_sdm_opth", "SLA_sdm_opth","PLH_sdm_opth")
-SR_sdm_opth <- data.frame("ID"=rownames(sdm_opth), "SR_sdm_opth"=rowSums(sdm_opth))
+CM_tot_opth <- left_join(indices_obs[[idx]], indices_sdm_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_opth[[idx]], by = "ID") %>%
+  left_join(CM_mem, by = "ID") %>%
+  left_join(CM_proxy, by = "ID")
 
-CM_sdm_prr <- CM(sdm_prr)
-colnames(CM_sdm_prr)=c("ID","LNC_sdm_prr", "SLA_sdm_prr","PLH_sdm_prr")
-CSTD_sdm_prr <- CSTD(sdm_prr)
-colnames(CSTD_sdm_prr)=c("ID","LNC_sdm_prr", "SLA_sdm_prr","PLH_sdm_prr")
-SR_sdm_prr <- data.frame("ID"=rownames(sdm_prr), "SR_sdm_prr"=rowSums(sdm_prr))
+CM_tot_prr <- left_join(indices_obs[[idx]], indices_sdm_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_prr[[idx]], by = "ID") %>%
+  left_join(CM_mem, by = "ID") %>%
+  left_join(CM_proxy, by = "ID")
 
-## MEM
-CM_mem <- read.csv("data/community_indices/CM_mem.csv", header = TRUE, row.names = 1)
-colnames(CM_mem) <- c('LNC_mem', 'SLA_mem','PLH_mem')
-CM_mem$ID <- rownames(CM_mem)
-CSTD_mem <- read.csv("data/community_indices/CSTD_mem.csv", header = TRUE, row.names = 1)
-colnames(CSTD_mem) <- c('LNC_mem', 'SLA_mem','PLH_mem')
-CSTD_mem$ID <- rownames(CSTD_mem)
+# Merge CSTD indices for all methods
+idx <- "CSTD"
+CSTD_tot_raw <- left_join(indices_obs[[idx]], indices_sdm_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_raw[[idx]], by = "ID") %>%
+  left_join(CSTD_mem, by = "ID") %>%
+  left_join(CSTD_proxy, by = "ID")
 
-## PROXY
-CM_proxy <- read.csv("data/community_indices/CM_proxy.csv", header = TRUE, row.names = 1)
-colnames(CM_proxy) <- c('LNC_proxy', 'SLA_proxy','PLH_proxy')
-CM_proxy$ID <- rownames(CM_proxy)
-CSTD_proxy <- read.csv("data/community_indices/CSTD_proxy.csv", header = TRUE, row.names = 1)
-colnames(CSTD_proxy) <- c('LNC_proxy', 'SLA_proxy','PLH_proxy')
-CSTD_proxy$ID <- rownames(CSTD_proxy)
-SR_proxy <- read.csv("data/community_indices/SR_proxy.csv", header = TRUE, row.names = 1)
-colnames(SR_proxy) <- c('SR_proxy')
-SR_proxy$ID <- rownames(SR_proxy)
+CSTD_tot_opth <- left_join(indices_obs[[idx]], indices_sdm_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_opth[[idx]], by = "ID") %>%
+  left_join(CSTD_mem, by = "ID") %>%
+  left_join(CSTD_proxy, by = "ID")
 
-## CAMELIA OBS
-CM_camelia_obs_raw <- CM(camelia_obs_raw)
-colnames(CM_camelia_obs_raw)=c("ID","LNC_camelia_obs_raw", "SLA_camelia_obs_raw","PLH_camelia_obs_raw")
-CSTD_camelia_obs_raw <- CSTD(camelia_obs_raw)
-colnames(CSTD_camelia_obs_raw)=c("ID","LNC_camelia_obs_raw", "SLA_camelia_obs_raw","PLH_camelia_obs_raw")
-SR_camelia_obs_raw <- data.frame("ID"=rownames(camelia_obs_raw), "SR_camelia_obs_raw"=rowSums(camelia_obs_raw))
+CSTD_tot_prr <- left_join(indices_obs[[idx]], indices_sdm_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_prr[[idx]], by = "ID") %>%
+  left_join(CSTD_mem, by = "ID") %>%
+  left_join(CSTD_proxy, by = "ID")
 
-CM_camelia_obs_opth <- CM(camelia_obs_opth)
-colnames(CM_camelia_obs_opth)=c("ID","LNC_camelia_obs_opth", "SLA_camelia_obs_opth","PLH_camelia_obs_opth")
-CSTD_camelia_obs_opth <- CSTD(camelia_obs_opth)
-colnames(CSTD_camelia_obs_opth)=c("ID","LNC_camelia_obs_opth", "SLA_camelia_obs_opth","PLH_camelia_obs_opth")
-SR_camelia_obs_opth <- data.frame("ID"=rownames(camelia_obs_opth), "SR_camelia_obs_opth"=rowSums(camelia_obs_opth))
+# Merge SR indices for all methods
+idx <- "SR"
+SR_tot_raw <- left_join(indices_obs[[idx]], indices_sdm_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_raw[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_raw[[idx]], by = "ID") %>%
+  left_join(SR_mem, by = "ID") %>%
+  left_join(SR_proxy, by = "ID")
 
-CM_camelia_obs_prr <- CM(camelia_obs_prr)
-colnames(CM_camelia_obs_prr)=c("ID","LNC_camelia_obs_prr", "SLA_camelia_obs_prr","PLH_camelia_obs_prr")
-CSTD_camelia_obs_prr <- CSTD(camelia_obs_prr)
-colnames(CSTD_camelia_obs_prr)=c("ID","LNC_camelia_obs_prr", "SLA_camelia_obs_prr","PLH_camelia_obs_prr")
-SR_camelia_obs_prr <- data.frame("ID"=rownames(camelia_obs_prr), "SR_camelia_obs_prr"=rowSums(camelia_obs_prr))
+SR_tot_opth <- left_join(indices_obs[[idx]], indices_sdm_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_opth[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_opth[[idx]], by = "ID") %>%
+  left_join(SR_mem, by = "ID") %>%
+  left_join(SR_proxy, by = "ID")
 
-## CAMELIA MEM
-CM_camelia_mem_raw <- CM(camelia_mem_raw)
-colnames(CM_camelia_mem_raw)=c("ID","LNC_camelia_mem_raw", "SLA_camelia_mem_raw","PLH_camelia_mem_raw")
-CSTD_camelia_mem_raw <- CSTD(camelia_mem_raw)
-colnames(CSTD_camelia_mem_raw)=c("ID","LNC_camelia_mem_raw", "SLA_camelia_mem_raw","PLH_camelia_mem_raw")
-SR_camelia_mem_raw <- data.frame("ID"=rownames(camelia_mem_raw), "SR_camelia_mem_raw"=rowSums(camelia_mem_raw))
+SR_tot_prr <- left_join(indices_obs[[idx]], indices_sdm_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_mem_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_obs_prr[[idx]], by = "ID") %>%
+  left_join(indices_camelia_proxy_prr[[idx]], by = "ID") %>%
+  left_join(SR_mem, by = "ID") %>%
+  left_join(SR_proxy, by = "ID")
 
-CM_camelia_mem_opth <- CM(camelia_mem_opth)
-colnames(CM_camelia_mem_opth)=c("ID","LNC_camelia_mem_opth", "SLA_camelia_mem_opth","PLH_camelia_mem_opth")
-CSTD_camelia_mem_opth <- CSTD(camelia_mem_opth)
-colnames(CSTD_camelia_mem_opth)=c("ID","LNC_camelia_mem_opth", "SLA_camelia_mem_opth","PLH_camelia_mem_opth")
-SR_camelia_mem_opth <- data.frame("ID"=rownames(camelia_mem_opth), "SR_camelia_mem_opth"=rowSums(camelia_mem_opth))
-
-CM_camelia_mem_prr <- CM(camelia_mem_prr)
-colnames(CM_camelia_mem_prr)=c("ID","LNC_camelia_mem_prr", "SLA_camelia_mem_prr","PLH_camelia_mem_prr")
-CSTD_camelia_mem_prr <- CSTD(camelia_mem_prr)
-colnames(CSTD_camelia_mem_prr)=c("ID","LNC_camelia_mem_prr", "SLA_camelia_mem_prr","PLH_camelia_mem_prr")
-SR_camelia_mem_prr <- data.frame("ID"=rownames(camelia_mem_prr), "SR_camelia_mem_prr"=rowSums(camelia_mem_prr))
-
-## CAMELIA PROXY
-CM_camelia_proxy_raw <- CM(camelia_proxy_raw)
-colnames(CM_camelia_proxy_raw)=c("ID","LNC_camelia_proxy_raw", "SLA_camelia_proxy_raw","PLH_camelia_proxy_raw")
-CSTD_camelia_proxy_raw <- CSTD(camelia_proxy_raw)
-colnames(CSTD_camelia_proxy_raw)=c("ID","LNC_camelia_proxy_raw", "SLA_camelia_proxy_raw","PLH_camelia_proxy_raw")
-SR_camelia_proxy_raw <- data.frame("ID"=rownames(camelia_proxy_raw), "SR_camelia_proxy_raw"=rowSums(camelia_proxy_raw))
-
-CM_camelia_proxy_opth <- CM(camelia_proxy_opth)
-colnames(CM_camelia_proxy_opth)=c("ID","LNC_camelia_proxy_opth", "SLA_camelia_proxy_opth","PLH_camelia_proxy_opth")
-CSTD_camelia_proxy_opth <- CSTD(camelia_proxy_opth)
-colnames(CSTD_camelia_proxy_opth)=c("ID","LNC_camelia_proxy_opth", "SLA_camelia_proxy_opth","PLH_camelia_proxy_opth")
-SR_camelia_proxy_opth <- data.frame("ID"=rownames(camelia_proxy_opth), "SR_camelia_proxy_opth"=rowSums(camelia_proxy_opth))
-
-CM_camelia_proxy_prr <- CM(camelia_proxy_prr)
-colnames(CM_camelia_proxy_prr)=c("ID","LNC_camelia_proxy_prr", "SLA_camelia_proxy_prr","PLH_camelia_proxy_prr")
-CSTD_camelia_proxy_prr <- CSTD(camelia_proxy_prr)
-colnames(CSTD_camelia_proxy_prr)=c("ID","LNC_camelia_proxy_prr", "SLA_camelia_proxy_prr","PLH_camelia_proxy_prr")
-SR_camelia_proxy_prr <- data.frame("ID"=rownames(camelia_proxy_prr), "SR_camelia_proxy_prr"=rowSums(camelia_proxy_prr))
-
-## TOTAL
-CM_tot_raw <- left_join(CM_obs, CM_sdm_raw, by="ID")
-CM_tot_raw <- left_join(CM_tot_raw, CM_camelia_mem_raw, by="ID")
-CM_tot_raw <- left_join(CM_tot_raw, CM_camelia_obs_raw, by="ID")
-CM_tot_raw <- left_join(CM_tot_raw, CM_camelia_proxy_raw, by="ID")
-CM_tot_raw <- left_join(CM_tot_raw, CM_mem, by="ID")
-
-CSTD_tot_raw <- left_join(CSTD_obs, CSTD_sdm_raw, by="ID")
-CSTD_tot_raw <- left_join(CSTD_tot_raw, CSTD_camelia_mem_raw, by="ID")
-CSTD_tot_raw <- left_join(CSTD_tot_raw, CSTD_camelia_obs_raw, by="ID")
-CSTD_tot_raw <- left_join(CSTD_tot_raw, CSTD_camelia_proxy_raw, by="ID")
-CSTD_tot_raw <- left_join(CSTD_tot_raw, CSTD_mem, by="ID")
-
-SR_tot_raw <- left_join(SR_obs, SR_sdm_raw, by="ID")
-SR_tot_raw <- left_join(SR_tot_raw, SR_camelia_mem_raw, by="ID")
-SR_tot_raw <- left_join(SR_tot_raw, SR_camelia_obs_raw, by="ID")
-SR_tot_raw <- left_join(SR_tot_raw, SR_camelia_proxy_raw, by="ID")
-SR_tot_raw <- left_join(SR_tot_raw, SR_mem, by="ID")
-
-CM_tot_opth <- left_join(CM_obs, CM_sdm_opth, by="ID")
-CM_tot_opth <- left_join(CM_tot_opth, CM_camelia_mem_opth, by="ID")
-CM_tot_opth <- left_join(CM_tot_opth, CM_camelia_obs_opth, by="ID")
-CM_tot_opth <- left_join(CM_tot_opth, CM_camelia_proxy_opth, by="ID")
-CM_tot_opth <- left_join(CM_tot_opth, CM_mem, by="ID")
-
-CSTD_tot_opth <- left_join(CSTD_obs, CSTD_sdm_opth, by="ID")
-CSTD_tot_opth <- left_join(CSTD_tot_opth, CSTD_camelia_mem_opth, by="ID")
-CSTD_tot_opth <- left_join(CSTD_tot_opth, CSTD_camelia_obs_opth, by="ID")
-CSTD_tot_opth <- left_join(CSTD_tot_opth, CSTD_camelia_proxy_opth, by="ID")
-CSTD_tot_opth <- left_join(CSTD_tot_opth, CSTD_mem, by="ID")
-
-SR_tot_opth <- left_join(SR_obs, SR_sdm_opth, by="ID")
-SR_tot_opth <- left_join(SR_tot_opth, SR_camelia_mem_opth, by="ID")
-SR_tot_opth <- left_join(SR_tot_opth, SR_camelia_obs_opth, by="ID")
-SR_tot_opth <- left_join(SR_tot_opth, SR_camelia_proxy_opth, by="ID")
-SR_tot_opth <- left_join(SR_tot_opth, SR_mem, by="ID")
-
-CM_tot_prr <- left_join(CM_obs, CM_sdm_prr, by="ID")
-CM_tot_prr <- left_join(CM_tot_prr, CM_camelia_mem_prr, by="ID")
-CM_tot_prr <- left_join(CM_tot_prr, CM_camelia_obs_prr, by="ID")
-CM_tot_prr <- left_join(CM_tot_prr, CM_camelia_proxy_prr, by="ID")
-CM_tot_prr <- left_join(CM_tot_prr, CM_mem, by="ID")
-
-CSTD_tot_prr <- left_join(CSTD_obs, CSTD_sdm_prr, by="ID")
-CSTD_tot_prr <- left_join(CSTD_tot_prr, CSTD_camelia_mem_prr, by="ID")
-CSTD_tot_prr <- left_join(CSTD_tot_prr, CSTD_camelia_obs_prr, by="ID")
-CSTD_tot_prr <- left_join(CSTD_tot_prr, CSTD_camelia_proxy_prr, by="ID")
-CSTD_tot_prr <- left_join(CSTD_tot_prr, CSTD_mem, by="ID")
-
-SR_tot_prr <- left_join(SR_obs, SR_sdm_prr, by="ID")
-SR_tot_prr <- left_join(SR_tot_prr, SR_camelia_mem_prr, by="ID")
-SR_tot_prr <- left_join(SR_tot_prr, SR_camelia_obs_prr, by="ID")
-SR_tot_prr <- left_join(SR_tot_prr, SR_camelia_proxy_prr, by="ID")
-SR_tot_prr <- left_join(SR_tot_prr, SR_mem, by="ID")
-
-
-#### -- FIGURE 1 -- ####
-figure_raw <- data.frame("obs_CM"=rep(CM_tot_raw$PLH_obs,5),
+#### -- FIGURE 3 -- ####
+# Create a dataframe containing observed and predicted values for different models
+figure_raw <- data.frame("obs_CM"=rep(CM_tot_raw$PLH_obs,4),
                          "Pred_CM"=c(CM_tot_raw$PLH_sdm_raw,
-                                     CM_tot_raw$PLH_mem,
                                      CM_tot_raw$PLH_camelia_obs_raw,
                                      CM_tot_raw$PLH_camelia_mem_raw,
                                      CM_tot_raw$PLH_camelia_proxy_raw),
-                         'obs_CSTD'=rep(CSTD_tot_raw$PLH_obs,5),
+                         'obs_CSTD'=rep(CSTD_tot_raw$PLH_obs,4),
                          "Pred_CSTD"=c(CSTD_tot_raw$PLH_sdm_raw,
-                                       CSTD_tot_raw$PLH_mem,
                                        CSTD_tot_raw$PLH_camelia_obs_raw,
                                        CSTD_tot_raw$PLH_camelia_mem_raw,
                                        CSTD_tot_raw$PLH_camelia_proxy_raw),
-                         'obs_SR' =rep(SR_tot_raw$SR_obs,5),
+                         'obs_SR' =rep(SR_tot_raw$SR_obs,4),
                          'Pred_SR' =c(SR_tot_raw$SR_sdm_raw,
-                                      SR_tot_raw$SR_mem,
                                       SR_tot_raw$SR_camelia_obs_raw,
                                       SR_tot_raw$SR_camelia_mem_raw,
                                       SR_tot_raw$SR_camelia_proxy_raw),
-                         "Models"=c(rep("SSDM", 4463), rep('MEM', 4463), rep("CAMELIA OBS", 4463), rep("CAMELIA MEM", 4463), rep("CAMELIA PROXY", 4463))
+                         "Models"=c(rep("SSDM", 4463), rep("CAMELIA OBS", 4463), rep("CAMELIA MEM", 4463), rep("CAMELIA PROXY", 4463))
 )
+figure_raw$Models <- factor(figure_raw$Models, levels = c("SSDM", "CAMELIA MEM", "CAMELIA PROXY", "CAMELIA OBS"))
 
-figure_raw$Models <- factor(figure_raw$Models, levels = c("SSDM", "MEM", "CAMELIA MEM", "CAMELIA PROXY", "CAMELIA OBS"))
-
+# Compute R² and RMSE for each model
 cor_metrics <- data.frame(
-  Models = factor(c("SSDM", "MEM", "CAMELIA MEM", "CAMELIA PROXY", "CAMELIA OBS"),
-                  levels = c("SSDM", "MEM", "CAMELIA MEM", "CAMELIA PROXY", "CAMELIA OBS")),
-  R2_CM = c(cor(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_sdm_raw)^2,
-            cor(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_mem)^2,
-            cor(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_camelia_mem_raw)^2,
-            cor(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_camelia_proxy_raw)^2,
-            cor(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_camelia_obs_raw)^2),
-  RMSE_CM = c(rmse(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_sdm_raw),
-              rmse(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_mem),
-              rmse(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_camelia_mem_raw),
-              rmse(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_camelia_proxy_raw),
-              rmse(CM_tot_raw$PLH_obs, CM_tot_raw$PLH_camelia_obs_raw)),
-  R2_CSTD = c(cor(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_sdm_raw)^2,
-              cor(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_mem)^2,
-              cor(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_camelia_mem_raw)^2,
-              cor(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_camelia_proxy_raw)^2,
-              cor(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_camelia_obs_raw)^2),
-  RMSE_CSTD = c(rmse(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_sdm_raw),
-                rmse(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_mem),
-                rmse(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_camelia_mem_raw),
-                rmse(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_camelia_proxy_raw),
-                rmse(CSTD_tot_raw$PLH_obs, CSTD_tot_raw$PLH_camelia_obs_raw)),
-  R2_SR = c(cor(SR_tot_raw$SR_obs, SR_tot_raw$SR_sdm_raw)^2,
-            cor(SR_tot_raw$SR_obs, SR_tot_raw$SR_mem)^2,
-            cor(SR_tot_raw$SR_obs, SR_tot_raw$SR_camelia_mem_raw)^2,
-            cor(SR_tot_raw$SR_obs, SR_tot_raw$SR_camelia_proxy_raw)^2,
-            cor(SR_tot_raw$SR_obs, SR_tot_raw$SR_camelia_obs_raw)^2),
-  RMSE_SR = c(rmse(SR_tot_raw$SR_obs, SR_tot_raw$SR_sdm_raw),
-              rmse(SR_tot_raw$SR_obs, SR_tot_raw$SR_mem),
-              rmse(SR_tot_raw$SR_obs, SR_tot_raw$SR_camelia_mem_raw),
-              rmse(SR_tot_raw$SR_obs, SR_tot_raw$SR_camelia_proxy_raw),
-              rmse(SR_tot_raw$SR_obs, SR_tot_raw$SR_camelia_obs_raw))
+  Models = factor(c("SSDM", "CAMELIA MEM", "CAMELIA PROXY", "CAMELIA OBS"), levels = c("SSDM", "CAMELIA MEM", "CAMELIA PROXY", "CAMELIA OBS")),
+  R2_CM = sapply(list(CM_tot_raw$PLH_sdm_raw, CM_tot_raw$PLH_camelia_mem_raw, CM_tot_raw$PLH_camelia_proxy_raw, CM_tot_raw$PLH_camelia_obs_raw), function(x) cor(CM_tot_raw$PLH_obs, x)^2),
+  RMSE_CM = sapply(list(CM_tot_raw$PLH_sdm_raw, CM_tot_raw$PLH_camelia_mem_raw, CM_tot_raw$PLH_camelia_proxy_raw, CM_tot_raw$PLH_camelia_obs_raw), function(x) rmse(CM_tot_raw$PLH_obs, x)),
+  R2_CSTD = sapply(list(CSTD_tot_raw$PLH_sdm_raw, CSTD_tot_raw$PLH_camelia_mem_raw, CSTD_tot_raw$PLH_camelia_proxy_raw, CSTD_tot_raw$PLH_camelia_obs_raw), function(x) cor(CSTD_tot_raw$PLH_obs, x)^2),
+  RMSE_CSTD = sapply(list(CSTD_tot_raw$PLH_sdm_raw, CSTD_tot_raw$PLH_camelia_mem_raw, CSTD_tot_raw$PLH_camelia_proxy_raw, CSTD_tot_raw$PLH_camelia_obs_raw), function(x) rmse(CSTD_tot_raw$PLH_obs, x)),
+  R2_SR = sapply(list(SR_tot_raw$SR_sdm_raw, SR_tot_raw$SR_camelia_mem_raw, SR_tot_raw$SR_camelia_proxy_raw, SR_tot_raw$SR_camelia_obs_raw), function(x) cor(SR_tot_raw$SR_obs, x)^2),
+  RMSE_SR = sapply(list(SR_tot_raw$SR_sdm_raw, SR_tot_raw$SR_camelia_mem_raw, SR_tot_raw$SR_camelia_proxy_raw, SR_tot_raw$SR_camelia_obs_raw), function(x) rmse(SR_tot_raw$SR_obs, x))
 )
 
+plot_fig_1 <- function(obs, pred, lab_text, cor_column, rmse_column) {
+  ggplot(figure_raw, aes(y = obs, x = pred, color = Models, fill = Models)) +
+    geom_hdr() +
+    geom_point(shape = 21, alpha = 0.1) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+    scale_color_manual(values = c("#E1812C", "darkblue", "#B22222", "darkgreen")) +
+    scale_fill_manual(values = c("#E1812C", "darkblue", "#B22222", "darkgreen")) +
+    facet_wrap(vars(Models), nrow = 1) +
+    ylab(paste0("Observed ",lab_text)) +
+    xlab(paste0("Predicted ",lab_text)) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(size = 14),
+      axis.text.y = element_text(size = 14),
+      axis.title.x = element_text(size = 16),
+      axis.title.y = element_text(size = 16),
+      strip.text = element_text(size = 10)
+    ) +
+    geom_label(data = cor_metrics,
+               aes(x = -Inf, y = Inf,
+                   label = sprintf("R² = %.2f\nRMSE = %.2f", round(get(cor_column), 2), round(get(rmse_column), 2))),
+               color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
+}
 
-CM_raw <- ggplot(figure_raw, aes(x = obs_CM, y = Pred_CM, color = Models, fill = Models)) +
-  geom_hdr() +
-  geom_point(shape = 21, alpha = 0.1) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("#E1812C", "#3274A1", "darkblue", "#B22222", "darkgreen")) +
-  scale_fill_manual(values = c("#E1812C", "#3274A1", "darkblue", "#B22222", "darkgreen")) +
-  facet_wrap(vars(Models), nrow = 1) +
-  xlab("Observed CM PLH") +
-  ylab("Predicted CM PLH") +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(size = 14),
-    axis.text.y = element_text(size = 14),
-    axis.title.x = element_text(size = 16),
-    axis.title.y = element_text(size = 16),
-    strip.text = element_text(size = 10)
-  )+
-  geom_label(data = cor_metrics,
-             aes(x = -Inf, y = Inf,
-                 label = sprintf("R² = %.2f\nRMSE = %.2f", round(R2_CM, 2), round(RMSE_CM, 2))),
-             color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
+# Generate plots
+CM_raw <- plot_fig_1(figure_raw$obs_CM, figure_raw$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
+CSTD_raw <- plot_fig_1(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
+SR_raw <- plot_fig_1(figure_raw$obs_SR, figure_raw$Pred_SR, "SR", "R2_SR", "RMSE_SR")
 
-CSTD_raw <- ggplot(figure_raw, aes(x = obs_CSTD, y = Pred_CSTD, color = Models, fill = Models)) +
-  geom_hdr() +
-  geom_point(shape = 21, alpha = 0.1) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("#E1812C", "#3274A1", "darkblue", "#B22222", "darkgreen")) +
-  scale_fill_manual(values = c("#E1812C", "#3274A1", "darkblue", "#B22222", "darkgreen")) +
-  facet_wrap(vars(Models), nrow = 1) +
-  xlab("Observed CSTD PLH") +
-  ylab("Predicted CSTD PLH") +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(size = 14),
-    axis.text.y = element_text(size = 14),
-    axis.title.x = element_text(size = 16),
-    axis.title.y = element_text(size = 16),
-    strip.text = element_text(size = 10)
-  ) +
-  geom_label(data = cor_metrics,
-             aes(x = -Inf, y = Inf,
-                 label = sprintf("R² = %.2f\nRMSE = %.2f", round(R2_CSTD, 2), round(RMSE_CSTD, 2))),
-             color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
-
-SR_raw <- ggplot(figure_raw, aes(x = obs_SR, y = Pred_SR, color = Models, fill = Models)) +
-  geom_hdr() +
-  geom_point(shape = 21, alpha = 0.1) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-  scale_color_manual(values = c("#E1812C", "#3274A1", "darkblue", "#B22222", "darkgreen")) +
-  scale_fill_manual(values = c("#E1812C", "#3274A1", "darkblue", "#B22222", "darkgreen")) +
-  facet_wrap(vars(Models), nrow = 1) +
-  xlab("Observed SR") +
-  ylab("Predicted SR") +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(size = 14),
-    axis.text.y = element_text(size = 14),
-    axis.title.x = element_text(size = 16),
-    axis.title.y = element_text(size = 16),
-    strip.text = element_text(size = 10)
-  ) +
-  geom_label(data = cor_metrics,
-             aes(x = -Inf, y = Inf,
-                 label = sprintf("R² = %.2f\nRMSE = %.2f", round(R2_SR, 2), round(RMSE_SR, 2))),
-             color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
-
-combined_plot <- SR_raw /  CM_raw / CSTD_raw +
+# Combine plots
+combined_plot <- SR_raw / CM_raw / CSTD_raw +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
@@ -383,150 +245,212 @@ ggsave("figure_1.pdf",
        height = 11.69,
        dpi = 300)
 
+## -- FIGURE S1 -- ##
 
-#### -- FIGURE 2 -- ####
-## ranking based binarization
-eval_rbb <- data.frame("ID"=rep(0, 100*4463),
-                       "richness"= rep(0, 100*4463),
-                       "CM_LNC"= rep(0, 100*4463),
-                       "CM_SLA"= rep(0, 100*4463),
-                       "CM_PLH"= rep(0, 100*4463),
-                       "CSTD_LNC"= rep(0, 100*4463),
-                       "CSTD_SLA"= rep(0, 100*4463),
-                       "CSTD_PLH"= rep(0, 100*4463),
-                       "richness_ssdm"=rep(0, 100*4463),
-                       "richness_camelia_mem"=rep(0, 100*4463), 
-                       "richness_camelia_obs"=rep(0, 100*4463),
-                       "richness_camelia_proxy"=rep(0, 100*4463),
-                       "Precision_ssdm"=rep(0, 100*4463),
-                       "Precision_camelia_mem"=rep(0, 100*4463),
-                       "Precision_camelia_obs"=rep(0, 100*4463),
-                       "Precision_camelia_proxy"=rep(0, 100*4463),
-                       "Sorensen_ssdm"=rep(0, 100*4463),
-                       "Sorensen_camelia_mem"=rep(0, 100*4463),
-                       "Sorensen_camelia_obs"=rep(0, 100*4463),
-                       "Sorensen_camelia_proxy"=rep(0, 100*4463),
-                       "Recall_ssdm"=rep(0,100*4463),
-                       "Recall_camelia_mem"=rep(0, 100*4463),
-                       "Recall_camelia_obs"=rep(0, 100*4463),
-                       "Recall_camelia_proxy"=rep(0, 100*4463),
-                       "Specificite_ssdm"=rep(0,100*4463),
-                       "Specificite_camelia_mem"=rep(0, 100*4463),
-                       "Specificite_camelia_obs"=rep(0, 100*4463),
-                       "Specificite_camelia_proxy"=rep(0, 100*4463),
-                       "CM_LNC_ssdm"=rep(0, 100*4463),
-                       "CM_SLA_ssdm"=rep(0, 100*4463),
-                       "CM_PLH_ssdm"=rep(0, 100*4463),
-                       "CM_LNC_camelia_mem"=rep(0, 100*4463),
-                       "CM_SLA_camelia_mem"=rep(0, 100*4463),
-                       "CM_PLH_camelia_mem"=rep(0, 100*4463),
-                       "CM_LNC_camelia_obs"=rep(0, 100*4463),
-                       "CM_SLA_camelia_obs"=rep(0, 100*4463),
-                       "CM_PLH_camelia_obs"=rep(0, 100*4463),
-                       "CM_LNC_camelia_proxy"=rep(0, 100*4463),
-                       "CM_SLA_camelia_proxy"=rep(0, 100*4463),
-                       "CM_PLH_camelia_proxy"=rep(0, 100*4463),
-                       "CSTD_LNC_ssdm"=rep(0, 100*4463),
-                       "CSTD_SLA_ssdm"=rep(0, 100*4463),
-                       "CSTD_PLH_ssdm"=rep(0, 100*4463),
-                       "CSTD_LNC_camelia_mem"=rep(0, 100*4463),
-                       "CSTD_SLA_camelia_mem"=rep(0, 100*4463),
-                       "CSTD_PLH_camelia_mem"=rep(0, 100*4463),
-                       "CSTD_LNC_camelia_obs"=rep(0, 100*4463),
-                       "CSTD_SLA_camelia_obs"=rep(0, 100*4463),
-                       "CSTD_PLH_camelia_obs"=rep(0, 100*4463),
-                       "CSTD_LNC_camelia_proxy"=rep(0, 100*4463),
-                       "CSTD_SLA_camelia_proxy"=rep(0, 100*4463),
-                       "CSTD_PLH_camelia_proxy"=rep(0, 100*4463))
-for (i in 1:4463){
-  obs<- as.numeric(survey_obs[i,])
-  eval_rbb$ID[((i-1)*100+1):((i-1)*100+100)]=rownames(survey_obs)[i]
-  eval_rbb$SR[((i-1)*100+1):((i-1)*100+100)]=length(which(obs==1))
-  eval_rbb$CM_LNC[((i-1)*100+1):((i-1)*100+100)]=sum(obs*traits$LNC, na.rm = TRUE)/length(which(obs==1))
-  eval_rbb$CM_SLA[((i-1)*100+1):((i-1)*100+100)]=sum(obs*traits$SLA, na.rm = TRUE)/length(which(obs==1))
-  eval_rbb$CM_PLH[((i-1)*100+1):((i-1)*100+100)]=sum(obs*traits$PLH, na.rm = TRUE)/length(which(obs==1))
+# Create a dataframe for MEM and PROXY predictions
+figure_comm <- data.frame(
+  "obs_CM" = rep(CM_tot_raw$PLH_obs, 2),
+  "Pred_CM" = c(CM_tot_raw$PLH_mem, CM_tot_raw$PLH_proxy),
+  "obs_CSTD" = rep(CSTD_tot_raw$PLH_obs, 2),
+  "Pred_CSTD" = c(CSTD_tot_raw$PLH_mem, CSTD_tot_raw$PLH_proxy),
+  "obs_SR" = rep(SR_tot_raw$SR_obs, 2),
+  "Pred_SR" = c(SR_tot_raw$SR_mem, SR_tot_raw$SR_proxy),
+  "Models" = rep(c("MEM", "PROXY"), each = nrow(CM_tot_raw))
+)
+figure_comm$Models <- factor(figure_comm$Models, levels = c("MEM", "PROXY"))
+
+# Compute R² and RMSE for MEM and PROXY
+cor_metrics_comm <- data.frame(
+  Models = factor(c("MEM", "PROXY"), levels = c("MEM", "PROXY")),
+  R2_CM = sapply(list(CM_tot_raw$PLH_mem, CM_tot_raw$PLH_proxy), function(x) cor(CM_tot_raw$PLH_obs, x)^2),
+  RMSE_CM = sapply(list(CM_tot_raw$PLH_mem, CM_tot_raw$PLH_proxy), function(x) rmse(CM_tot_raw$PLH_obs, x)),
+  R2_CSTD = sapply(list(CSTD_tot_raw$PLH_mem, CSTD_tot_raw$PLH_proxy), function(x) cor(CSTD_tot_raw$PLH_obs, x)^2),
+  RMSE_CSTD = sapply(list(CSTD_tot_raw$PLH_mem, CSTD_tot_raw$PLH_proxy), function(x) rmse(CSTD_tot_raw$PLH_obs, x)),
+  R2_SR = sapply(list(SR_tot_raw$SR_mem, SR_tot_raw$SR_proxy), function(x) cor(SR_tot_raw$SR_obs, x)^2),
+  RMSE_SR = sapply(list(SR_tot_raw$SR_mem, SR_tot_raw$SR_proxy), function(x) rmse(SR_tot_raw$SR_obs, x))
+)
+
+plot_fig_S1 <- function(obs, pred, lab_text, cor_column, rmse_column) {
+  ggplot(figure_comm, aes(y = obs, x = pred, color = Models, fill = Models)) +
+    geom_hdr() +
+    geom_point(shape = 21, alpha = 0.1) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +  
+    scale_color_manual(values = c("#3274A1", "#FFC0CB")) +
+    scale_fill_manual(values = c("#3274A1", "#FFC0CB")) +
+    facet_wrap(vars(Models), nrow = 1) +
+    ylab(paste0("Observed ",lab_text)) +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(size = 14),
+      axis.text.y = element_text(size = 14),
+      axis.title.x = element_text(size = 16),
+      axis.title.y = element_text(size = 16),
+      strip.text = element_text(size = 10)
+    ) +
+    geom_label(data = cor_metrics_comm,
+               aes(x = -Inf, y = Inf,
+                   label = sprintf("R² = %.2f\nRMSE = %.2f", round(get(cor_column), 2), round(get(rmse_column), 2))),
+               color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
+}
+# Generate plots for Figure S1
+CM_comm <- plot_fig_S1(figure_comm$obs_CM, figure_comm$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
+CSTD_comm <- plot_fig_S1(figure_comm$obs_CSTD, figure_comm$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
+SR_comm <- plot_fig_S1(figure_comm$obs_SR, figure_comm$Pred_SR, "SR", "R2_SR", "RMSE_SR") 
+
+# Combine plots
+comm_plot <- SR_comm / CM_comm / CSTD_comm +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = "A")
+
+# Save Figure S1
+ggsave("figure_S1.pdf",
+       plot = comm_plot,
+       device = "pdf",
+       width = 8.27,
+       height = 11.69,
+       dpi = 300)
+
+
+# -- FIGURE 4: Ranking-based binarization --
+# Creating an empty data frame to store results
+eval_rbb <- data.frame(
+  "ID" = rep(0, 100 * 4463),
+  "richness" = rep(0, 100 * 4463),
+  "CM_LNC" = rep(0, 100 * 4463),
+  "CM_SLA" = rep(0, 100 * 4463),
+  "CM_PLH" = rep(0, 100 * 4463),
+  "CSTD_LNC" = rep(0, 100 * 4463),
+  "CSTD_SLA" = rep(0, 100 * 4463),
+  "CSTD_PLH" = rep(0, 100 * 4463),
+  "richness_ssdm" = rep(0, 100 * 4463),
+  "richness_camelia_mem" = rep(0, 100 * 4463),
+  "richness_camelia_obs" = rep(0, 100 * 4463),
+  "richness_camelia_proxy" = rep(0, 100 * 4463),
+  "Precision_ssdm" = rep(0, 100 * 4463),
+  "Precision_camelia_mem" = rep(0, 100 * 4463),
+  "Precision_camelia_obs" = rep(0, 100 * 4463),
+  "Precision_camelia_proxy" = rep(0, 100 * 4463),
+  "Sorensen_ssdm" = rep(0, 100 * 4463),
+  "Sorensen_camelia_mem" = rep(0, 100 * 4463),
+  "Sorensen_camelia_obs" = rep(0, 100 * 4463),
+  "Sorensen_camelia_proxy" = rep(0, 100 * 4463),
+  "Recall_ssdm" = rep(0, 100 * 4463),
+  "Recall_camelia_mem" = rep(0, 100 * 4463),
+  "Recall_camelia_obs" = rep(0, 100 * 4463),
+  "Recall_camelia_proxy" = rep(0, 100 * 4463),
+  "Specificite_ssdm" = rep(0, 100 * 4463),
+  "Specificite_camelia_mem" = rep(0, 100 * 4463),
+  "Specificite_camelia_obs" = rep(0, 100 * 4463),
+  "Specificite_camelia_proxy" = rep(0, 100 * 4463),
+  "CM_LNC_ssdm" = rep(0, 100 * 4463),
+  "CM_SLA_ssdm" = rep(0, 100 * 4463),
+  "CM_PLH_ssdm" = rep(0, 100 * 4463),
+  "CM_LNC_camelia_mem" = rep(0, 100 * 4463),
+  "CM_SLA_camelia_mem" = rep(0, 100 * 4463),
+  "CM_PLH_camelia_mem" = rep(0, 100 * 4463),
+  "CM_LNC_camelia_obs" = rep(0, 100 * 4463),
+  "CM_SLA_camelia_obs" = rep(0, 100 * 4463),
+  "CM_PLH_camelia_obs" = rep(0, 100 * 4463),
+  "CM_LNC_camelia_proxy" = rep(0, 100 * 4463),
+  "CM_SLA_camelia_proxy" = rep(0, 100 * 4463),
+  "CM_PLH_camelia_proxy" = rep(0, 100 * 4463),
+  "CSTD_LNC_ssdm" = rep(0, 100 * 4463),
+  "CSTD_SLA_ssdm" = rep(0, 100 * 4463),
+  "CSTD_PLH_ssdm" = rep(0, 100 * 4463),
+  "CSTD_LNC_camelia_mem" = rep(0, 100 * 4463),
+  "CSTD_SLA_camelia_mem" = rep(0, 100 * 4463),
+  "CSTD_PLH_camelia_mem" = rep(0, 100 * 4463),
+  "CSTD_LNC_camelia_obs" = rep(0, 100 * 4463),
+  "CSTD_SLA_camelia_obs" = rep(0, 100 * 4463),
+  "CSTD_PLH_camelia_obs" = rep(0, 100 * 4463),
+  "CSTD_LNC_camelia_proxy" = rep(0, 100 * 4463),
+  "CSTD_SLA_camelia_proxy" = rep(0, 100 * 4463),
+  "CSTD_PLH_camelia_proxy" = rep(0, 100 * 4463)
+)
+
+for (i in 1:4463) {
+  obs <- as.numeric(survey_obs[i, ])
+  # Calculate richness and community metrics for each species
+  eval_rbb$ID[((i-1)*100+1):((i-1)*100+100)] = rownames(survey_obs)[i]
+  eval_rbb$richness[((i-1)*100+1):((i-1)*100+100)] = sum(obs == 1)
   
-  eval_rbb$CSTD_LNC[((i-1)*100+1):((i-1)*100+100)]= sqrt(sum(obs*(traits$LNC-eval_rbb$CM_LNC[(i-1)*100+1])^2, na.rm=TRUE)/length(which(obs==1)))
-  eval_rbb$CSTD_SLA[((i-1)*100+1):((i-1)*100+100)]= sqrt(sum(obs*(traits$SLA-eval_rbb$CM_SLA[(i-1)*100+1])^2, na.rm=TRUE)/length(which(obs==1)))
-  eval_rbb$CSTD_PLH[((i-1)*100+1):((i-1)*100+100)]= sqrt(sum(obs*(traits$PLH-eval_rbb$CM_PLH[(i-1)*100+1])^2, na.rm=TRUE)/length(which(obs==1)))
+  # Calculate community metrics (CM) for each trait: LNC, SLA, PLH
+  eval_rbb$CM_LNC[((i-1)*100+1):((i-1)*100+100)] = sum(obs * traits$LNC, na.rm = TRUE) / sum(obs == 1)
+  eval_rbb$CM_SLA[((i-1)*100+1):((i-1)*100+100)] = sum(obs * traits$SLA, na.rm = TRUE) / sum(obs == 1)
+  eval_rbb$CM_PLH[((i-1)*100+1):((i-1)*100+100)] = sum(obs * traits$PLH, na.rm = TRUE) / sum(obs == 1)
   
-  predictions_sdm <- as.numeric(sdm_raw[i,])
-  predictions_camelia_mem <- as.numeric(camelia_mem_raw[i,])
-  predictions_camelia_obs <- as.numeric(camelia_obs_raw[i,])
-  predictions_camelia_proxy <- as.numeric(camelia_proxy_raw[i,])
-  for (j in seq(0.01, 1, by = 0.01)){
-    predictions_sdm_j <- rep(0,831)
-    predictions_sdm_j[which(predictions_sdm>j)]=1
-    predictions_camelia_mem_j <- rep(0,831)
-    predictions_camelia_mem_j[which(predictions_camelia_mem>j)]=1
-    predictions_camelia_obs_j <- rep(0,831)
-    predictions_camelia_obs_j[which(predictions_camelia_obs>j)]=1
-    predictions_camelia_proxy_j <- rep(0,831)
-    predictions_camelia_proxy_j[which(predictions_camelia_proxy>j)]=1
+  # Calculate community standard deviations (CSTD) for each trait
+  eval_rbb$CSTD_LNC[((i-1)*100+1):((i-1)*100+100)] = sqrt(sum(obs * (traits$LNC - eval_rbb$CM_LNC[(i-1)*100+1])^2, na.rm = TRUE) / sum(obs == 1))
+  eval_rbb$CSTD_SLA[((i-1)*100+1):((i-1)*100+100)] = sqrt(sum(obs * (traits$SLA - eval_rbb$CM_SLA[(i-1)*100+1])^2, na.rm = TRUE) / sum(obs == 1))
+  eval_rbb$CSTD_PLH[((i-1)*100+1):((i-1)*100+100)] = sqrt(sum(obs * (traits$PLH - eval_rbb$CM_PLH[(i-1)*100+1])^2, na.rm = TRUE) / sum(obs == 1))
+  
+  # Predictions
+  predictions_sdm <- as.numeric(sdm_raw[i, ])
+  predictions_camelia_mem <- as.numeric(camelia_mem_raw[i, ])
+  predictions_camelia_obs <- as.numeric(camelia_obs_raw[i, ])
+  predictions_camelia_proxy <- as.numeric(camelia_proxy_raw[i, ])
+  
+  # Loop over thresholds (from 0.01 to 1)
+  for (j in seq(0.01, 1, by = 0.01)) {
+    # Apply threshold and binarize predictions
+    predictions_sdm_j <- as.numeric(predictions_sdm > j)
+    predictions_camelia_mem_j <- as.numeric(predictions_camelia_mem > j)
+    predictions_camelia_obs_j <- as.numeric(predictions_camelia_obs > j)
+    predictions_camelia_proxy_j <- as.numeric(predictions_camelia_proxy > j)
     
-    VP_sdm = length(which(which(predictions_sdm_j==1) %in% which(obs==1)))
-    FP_sdm = length(which(which(predictions_sdm_j==1) %in% which(obs==0)))
-    FN_sdm = length(which(which(predictions_sdm_j==0) %in% which(obs==1)))
-    VN_sdm = length(which(which(predictions_sdm_j==0) %in% which(obs==0)))
-    eval_rbb$Precision_ssdm[(i-1)*100+j*100] = VP_sdm/(VP_sdm+FP_sdm)
-    eval_rbb$Sorensen_ssdm[(i-1)*100+j*100] = 2*VP_sdm/(2*VP_sdm+FP_sdm+FN_sdm)
-    eval_rbb$Recall_ssdm[(i-1)*100+j*100] = VP_sdm/(VP_sdm+FN_sdm)
-    eval_rbb$Specificite_ssdm[(i-1)*100+j*100] = FP_sdm/(VN_sdm+FP_sdm)
-    eval_rbb$richness_ssdm[(i-1)*100+j*100]=length(which(predictions_sdm_j==1))
-    eval_rbb$CM_LNC_ssdm[(i-1)*100+j*100]=sum(predictions_sdm_j*traits$LNC, na.rm = TRUE)/length(which(predictions_sdm_j==1))
-    eval_rbb$CM_SLA_ssdm[(i-1)*100+j*100]=sum(predictions_sdm_j*traits$SLA, na.rm = TRUE)/length(which(predictions_sdm_j==1))
-    eval_rbb$CM_PLH_ssdm[(i-1)*100+j*100]=sum(predictions_sdm_j*traits$PLH, na.rm = TRUE)/length(which(predictions_sdm_j==1))
-    eval_rbb$CSTD_LNC_ssdm[(i-1)*100+j*100]= sqrt(sum(predictions_sdm_j*(traits$LNC-eval_rbb$CM_LNC_ssdm[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_sdm_j==1)))
-    eval_rbb$CSTD_SLA_ssdm[(i-1)*100+j*100]= sqrt(sum(predictions_sdm_j*(traits$SLA-eval_rbb$CM_SLA_ssdm[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_sdm_j==1)))
-    eval_rbb$CSTD_PLH_ssdm[(i-1)*100+j*100]= sqrt(sum(predictions_sdm_j*(traits$PLH-eval_rbb$CM_PLH_ssdm[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_sdm_j==1)))
+    # Calculate performance metrics: Precision, Sorensen, Recall, Specificity for each model
+    eval_rbb$Precision_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j == 1 & obs == 1) / sum(predictions_sdm_j == 1)
+    eval_rbb$Sorensen_ssdm[(i-1)*100 + j*100] = 2 * sum(predictions_sdm_j == 1 & obs == 1) / (sum(predictions_sdm_j == 1) + sum(obs == 1))
+    eval_rbb$Recall_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j == 1 & obs == 1) / sum(obs == 1)
+    eval_rbb$Specificite_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j == 0 & obs == 0) / sum(predictions_sdm_j == 0)
+
+    eval_rbb$Precision_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j == 1 & obs == 1) / sum(predictions_camelia_mem_j == 1)
+    eval_rbb$Sorensen_camelia_mem[(i-1)*100 + j*100] = 2 * sum(predictions_camelia_mem_j == 1 & obs == 1) / (sum(predictions_camelia_mem_j == 1) + sum(obs == 1))
+    eval_rbb$Recall_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j == 1 & obs == 1) / sum(obs == 1)
+    eval_rbb$Specificite_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j == 0 & obs == 0) / sum(predictions_camelia_mem_j == 0)
     
-    VP_camelia_mem = length(which(which(predictions_camelia_mem_j==1) %in% which(obs==1)))
-    FP_camelia_mem = length(which(which(predictions_camelia_mem_j==1) %in% which(obs==0)))
-    FN_camelia_mem = length(which(which(predictions_camelia_mem_j==0) %in% which(obs==1)))
-    VN_camelia_mem = length(which(which(predictions_camelia_mem_j==0) %in% which(obs==0)))
-    eval_rbb$Precision_camelia_mem[(i-1)*100+j*100] = VP_camelia_mem/(VP_camelia_mem+FP_camelia_mem)
-    eval_rbb$Recall_camelia_mem[(i-1)*100+j*100] = VP_camelia_mem/(VP_camelia_mem+FN_camelia_mem)
-    eval_rbb$Specificite_camelia_mem[(i-1)*100+j*100] = FP_camelia_mem/(VN_camelia_mem+FP_camelia_mem)
-    eval_rbb$Sorensen_camelia_mem[(i-1)*100+j*100] = 2*VP_camelia_mem/(2*VP_camelia_mem+FP_camelia_mem+FN_camelia_mem)
-    eval_rbb$richness_camelia_mem[(i-1)*100+j*100]=length(which(predictions_camelia_mem_j==1))
-    eval_rbb$CM_LNC_camelia_mem[(i-1)*100+j*100]=sum(predictions_camelia_mem_j*traits$LNC, na.rm = TRUE)/length(which(predictions_camelia_mem_j==1))
-    eval_rbb$CM_SLA_camelia_mem[(i-1)*100+j*100]=sum(predictions_camelia_mem_j*traits$SLA, na.rm = TRUE)/length(which(predictions_camelia_mem_j==1))
-    eval_rbb$CM_PLH_camelia_mem[(i-1)*100+j*100]=sum(predictions_camelia_mem_j*traits$PLH, na.rm = TRUE)/length(which(predictions_camelia_mem_j==1))
-    eval_rbb$CSTD_LNC_camelia_mem[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_mem_j*(traits$LNC-eval_rbb$CM_LNC_camelia_mem[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_mem_j==1)))
-    eval_rbb$CSTD_SLA_camelia_mem[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_mem_j*(traits$SLA-eval_rbb$CM_SLA_camelia_mem[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_mem_j==1)))
-    eval_rbb$CSTD_PLH_camelia_mem[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_mem_j*(traits$PLH-eval_rbb$CM_PLH_camelia_mem[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_mem_j==1)))
+    eval_rbb$Precision_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j == 1 & obs == 1) / sum(predictions_camelia_obs_j == 1)
+    eval_rbb$Sorensen_camelia_obs[(i-1)*100 + j*100] = 2 * sum(predictions_camelia_obs_j == 1 & obs == 1) / (sum(predictions_camelia_obs_j == 1) + sum(obs == 1))
+    eval_rbb$Recall_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j == 1 & obs == 1) / sum(obs == 1)
+    eval_rbb$Specificite_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j == 0 & obs == 0) / sum(predictions_camelia_obs_j == 0)
     
-    VP_camelia_obs = length(which(which(predictions_camelia_obs_j==1) %in% which(obs==1)))
-    FP_camelia_obs = length(which(which(predictions_camelia_obs_j==1) %in% which(obs==0)))
-    FN_camelia_obs = length(which(which(predictions_camelia_obs_j==0) %in% which(obs==1)))
-    VN_camelia_obs = length(which(which(predictions_camelia_obs_j==0) %in% which(obs==0)))
-    eval_rbb$Precision_camelia_obs[(i-1)*100+j*100] = VP_camelia_obs/(VP_camelia_obs+FP_camelia_obs)
-    eval_rbb$Sorensen_camelia_obs[(i-1)*100+j*100] = 2*VP_camelia_obs/(2*VP_camelia_obs+FP_camelia_obs+FN_camelia_obs)
-    eval_rbb$Recall_camelia_obs[(i-1)*100+j*100] = VP_camelia_obs/(VP_camelia_obs+FN_camelia_obs)
-    eval_rbb$Specificite_camelia_obs[(i-1)*100+j*100] = FP_camelia_obs/(VN_camelia_obs+FP_camelia_obs)
-    eval_rbb$richness_camelia_obs[(i-1)*100+j*100]=length(which(predictions_camelia_obs_j==1))
-    eval_rbb$CM_LNC_camelia_obs[(i-1)*100+j*100]=sum(predictions_camelia_obs_j*traits$LNC, na.rm = TRUE)/length(which(predictions_camelia_obs_j==1))
-    eval_rbb$CM_SLA_camelia_obs[(i-1)*100+j*100]=sum(predictions_camelia_obs_j*traits$SLA, na.rm = TRUE)/length(which(predictions_camelia_obs_j==1))
-    eval_rbb$CM_PLH_camelia_obs[(i-1)*100+j*100]=sum(predictions_camelia_obs_j*traits$PLH, na.rm = TRUE)/length(which(predictions_camelia_obs_j==1))
-    eval_rbb$CSTD_LNC_camelia_obs[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_obs_j*(traits$LNC-eval_rbb$CM_LNC_camelia_obs[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_obs_j==1)))
-    eval_rbb$CSTD_SLA_camelia_obs[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_obs_j*(traits$SLA-eval_rbb$CM_SLA_camelia_obs[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_obs_j==1)))
-    eval_rbb$CSTD_PLH_camelia_obs[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_obs_j*(traits$PLH-eval_rbb$CM_PLH_camelia_obs[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_obs_j==1)))
+    eval_rbb$Precision_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j == 1 & obs == 1) / sum(predictions_camelia_proxy_j == 1)
+    eval_rbb$Sorensen_camelia_proxy[(i-1)*100 + j*100] = 2 * sum(predictions_camelia_proxy_j == 1 & obs == 1) / (sum(predictions_camelia_proxy_j == 1) + sum(obs == 1))
+    eval_rbb$Recall_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j == 1 & obs == 1) / sum(obs == 1)
+    eval_rbb$Specificite_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j == 0 & obs == 0) / sum(predictions_camelia_proxy_j == 0)
     
-    VP_camelia_proxy = length(which(which(predictions_camelia_proxy_j==1) %in% which(obs==1)))
-    FP_camelia_proxy = length(which(which(predictions_camelia_proxy_j==1) %in% which(obs==0)))
-    FN_camelia_proxy = length(which(which(predictions_camelia_proxy_j==0) %in% which(obs==1)))
-    VN_camelia_proxy = length(which(which(predictions_camelia_proxy_j==0) %in% which(obs==0)))
-    eval_rbb$Precision_camelia_proxy[(i-1)*100+j*100] = VP_camelia_proxy/(VP_camelia_proxy+FP_camelia_proxy)
-    eval_rbb$Sorensen_camelia_proxy[(i-1)*100+j*100] = 2*VP_camelia_proxy/(2*VP_camelia_proxy+FP_camelia_proxy+FN_camelia_proxy)
-    eval_rbb$Recall_camelia_proxy[(i-1)*100+j*100] = VP_camelia_proxy/(VP_camelia_proxy+FN_camelia_proxy)
-    eval_rbb$Specificite_camelia_proxy[(i-1)*100+j*100] = FP_camelia_proxy/(VN_camelia_proxy+FP_camelia_proxy)
-    eval_rbb$richness_camelia_proxy[(i-1)*100+j*100]=length(which(predictions_camelia_proxy_j==1))
-    eval_rbb$CM_LNC_camelia_proxy[(i-1)*100+j*100]=sum(predictions_camelia_proxy_j*traits$LNC, na.rm = TRUE)/length(which(predictions_camelia_proxy_j==1))
-    eval_rbb$CM_SLA_camelia_proxy[(i-1)*100+j*100]=sum(predictions_camelia_proxy_j*traits$SLA, na.rm = TRUE)/length(which(predictions_camelia_proxy_j==1))
-    eval_rbb$CM_PLH_camelia_proxy[(i-1)*100+j*100]=sum(predictions_camelia_proxy_j*traits$PLH, na.rm = TRUE)/length(which(predictions_camelia_proxy_j==1))
-    eval_rbb$CSTD_LNC_camelia_proxy[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_proxy_j*(traits$LNC-eval_rbb$CM_LNC_camelia_proxy[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_proxy_j==1)))
-    eval_rbb$CSTD_SLA_camelia_proxy[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_proxy_j*(traits$SLA-eval_rbb$CM_SLA_camelia_proxy[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_proxy_j==1)))
-    eval_rbb$CSTD_PLH_camelia_proxy[(i-1)*100+j*100]= sqrt(sum(predictions_camelia_proxy_j*(traits$PLH-eval_rbb$CM_PLH_camelia_proxy[(i-1)*100+j*100])^2, na.rm=TRUE)/length(which(predictions_camelia_proxy_j==1)))
+    # Calculate richness and CM for SDM predictions
+    eval_rbb$richness_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j == 1)
+    eval_rbb$CM_LNC_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j * traits$LNC, na.rm = TRUE) / sum(predictions_sdm_j == 1)
+    eval_rbb$CM_SLA_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j * traits$SLA, na.rm = TRUE) / sum(predictions_sdm_j == 1)
+    eval_rbb$CM_PLH_ssdm[(i-1)*100 + j*100] = sum(predictions_sdm_j * traits$PLH, na.rm = TRUE) / sum(predictions_sdm_j == 1)
+    eval_rbb$CSTD_LNC_ssdm[(i-1)*100 + j*100] = sqrt(sum(predictions_sdm_j * (traits$LNC - eval_rbb$CM_LNC_ssdm[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_sdm_j == 1)))
+    eval_rbb$CSTD_SLA_ssdm[(i-1)*100 + j*100] = sqrt(sum(predictions_sdm_j * (traits$SLA - eval_rbb$CM_SLA_ssdm[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_sdm_j == 1)))
+    eval_rbb$CSTD_PLH_ssdm[(i-1)*100 + j*100] = sqrt(sum(predictions_sdm_j * (traits$PLH - eval_rbb$CM_PLH_ssdm[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_sdm_j == 1)))
+    
+    eval_rbb$richness_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j == 1)
+    eval_rbb$CM_LNC_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j * traits$LNC, na.rm = TRUE) / sum(predictions_camelia_mem_j == 1)
+    eval_rbb$CM_SLA_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j * traits$SLA, na.rm = TRUE) / sum(predictions_camelia_mem_j == 1)
+    eval_rbb$CM_PLH_camelia_mem[(i-1)*100 + j*100] = sum(predictions_camelia_mem_j * traits$PLH, na.rm = TRUE) / sum(predictions_camelia_mem_j == 1)
+    eval_rbb$CSTD_LNC_camelia_mem[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_mem_j * (traits$LNC - eval_rbb$CM_LNC_camelia_mem[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_mem_j == 1)))
+    eval_rbb$CSTD_SLA_camelia_mem[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_mem_j * (traits$SLA - eval_rbb$CM_SLA_camelia_mem[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_mem_j == 1)))
+    eval_rbb$CSTD_PLH_camelia_mem[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_mem_j * (traits$PLH - eval_rbb$CM_PLH_camelia_mem[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_mem_j == 1)))
+    
+    eval_rbb$richness_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j == 1)
+    eval_rbb$CM_LNC_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j * traits$LNC, na.rm = TRUE) / sum(predictions_camelia_obs_j == 1)
+    eval_rbb$CM_SLA_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j * traits$SLA, na.rm = TRUE) / sum(predictions_camelia_obs_j == 1)
+    eval_rbb$CM_PLH_camelia_obs[(i-1)*100 + j*100] = sum(predictions_camelia_obs_j * traits$PLH, na.rm = TRUE) / sum(predictions_camelia_obs_j == 1)
+    eval_rbb$CSTD_LNC_camelia_obs[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_obs_j * (traits$LNC - eval_rbb$CM_LNC_camelia_obs[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_obs_j == 1)))
+    eval_rbb$CSTD_SLA_camelia_obs[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_obs_j * (traits$SLA - eval_rbb$CM_SLA_camelia_obs[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_obs_j == 1)))
+    eval_rbb$CSTD_PLH_camelia_obs[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_obs_j * (traits$PLH - eval_rbb$CM_PLH_camelia_obs[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_obs_j == 1)))
+    
+    eval_rbb$richness_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j == 1)
+    eval_rbb$CM_LNC_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j * traits$LNC, na.rm = TRUE) / sum(predictions_camelia_proxy_j == 1)
+    eval_rbb$CM_SLA_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j * traits$SLA, na.rm = TRUE) / sum(predictions_camelia_proxy_j == 1)
+    eval_rbb$CM_PLH_camelia_proxy[(i-1)*100 + j*100] = sum(predictions_camelia_proxy_j * traits$PLH, na.rm = TRUE) / sum(predictions_camelia_proxy_j == 1)
+    eval_rbb$CSTD_LNC_camelia_proxy[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_proxy_j * (traits$LNC - eval_rbb$CM_LNC_camelia_proxy[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_proxy_j == 1)))
+    eval_rbb$CSTD_SLA_camelia_proxy[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_proxy_j * (traits$SLA - eval_rbb$CM_SLA_camelia_proxy[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_proxy_j == 1)))
+    eval_rbb$CSTD_PLH_camelia_proxy[(i-1)*100 + j*100] = sqrt(sum(predictions_camelia_proxy_j * (traits$PLH - eval_rbb$CM_PLH_camelia_proxy[(i-1)*100+j*100])^2, na.rm = TRUE) / length(which(predictions_camelia_proxy_j == 1)))
   }
   print(i)
 }
@@ -559,7 +483,7 @@ plot_diff_CM_PLH <- ggplot(eval_rbb) +
   geom_smooth(aes(x=log(eval_rbb$richness_camelia_mem/eval_rbb$richness), y=abs((eval_rbb$CM_PLH-eval_rbb$CM_PLH_camelia_mem)/eval_rbb$CM_PLH)),span = 0.05, color="darkblue", fill = "darkblue") + 
   geom_smooth(aes(x=log(eval_rbb$richness_camelia_obs/eval_rbb$richness), y=abs((eval_rbb$CM_PLH-eval_rbb$CM_PLH_camelia_obs)/eval_rbb$CM_PLH)),span = 0.05, color="darkgreen", fill = "darkgreen") +  
   geom_smooth(aes(x=log(eval_rbb$richness_camelia_proxy/eval_rbb$richness), y=abs((eval_rbb$CM_PLH-eval_rbb$CM_PLH_camelia_proxy)/eval_rbb$CM_PLH)),span = 0.05, color="#B22222", fill = "#B22222") +  
-  scale_y_continuous(trans = log10_trans(), labels = scales::comma, limits = c(0.0000005, 10))+ #, breaks = c(1e-4, 1e-2, 1)) +
+  scale_y_continuous(trans = log10_trans(), labels = scales::comma, limits = c(0.0000005, 10))+
   coord_trans(y='reverse') +
   xlab(bquote('log(richness pred/richness obs)')) + 
   ylab(bquote('abs((CM obs - CM pred)/CM obs)')) + 
@@ -590,138 +514,111 @@ Sorensen_logrichness <- ggplot(eval_rbb) +
     legend.position = "none")
 
 ## TSS optimised threshold binarization :
-figure_sites_opth <- data.frame("ID"=rownames(survey_obs), 
-                                "richness"=rowSums(survey_obs),
-                                "richness_sdm_opth"=rowSums(sdm_opth),
-                                "VP_sdm_opth"=rep(0,4463),
-                                "FP_sdm_opth"=rep(0,4463),
-                                "VN_sdm_opth"=rep(0,4463),
-                                "FN_sdm_opth"=rep(0,4463),
-                                "Specificite_sdm_opth"=rep(0,4463),
-                                "Sensibilite_sdm_opth"=rep(0,4463),
-                                "Precision_sdm_opth"=rep(0,4463),
-                                "Sorensen_sdm_opth"=rep(0,4463),
-                                "VP_camelia_mem_opth"=rep(0,4463),
-                                "FP_camelia_mem_opth"=rep(0,4463),
-                                "VN_camelia_mem_opth"=rep(0,4463),
-                                "FN_camelia_mem_opth"=rep(0,4463),
-                                "richness_camelia_mem_opth"=rowSums(camelia_mem_opth),
-                                "Specificite_camelia_mem_opth"=rep(0,4463),
-                                "Sensibilite_camelia_mem_opth"=rep(0,4463),
-                                "Precision_camelia_mem_opth"=rep(0,4463),
-                                "Sorensen_camelia_mem_opth"=rep(0,4463),
-                                "VP_camelia_obs_opth"=rep(0,4463),
-                                "FP_camelia_obs_opth"=rep(0,4463),
-                                "VN_camelia_obs_opth"=rep(0,4463),
-                                "FN_camelia_obs_opth"=rep(0,4463),
-                                "richness_camelia_obs_opth"=rowSums(camelia_obs_opth),
-                                "Specificite_camelia_obs_opth"=rep(0,4463),
-                                "Sensibilite_camelia_obs_opth"=rep(0,4463),
-                                "Precision_camelia_obs_opth"=rep(0,4463),
-                                "Sorensen_camelia_obs_opth"=rep(0,4463),
-                                "VP_camelia_proxy_opth"=rep(0,4463),
-                                "FP_camelia_proxy_opth"=rep(0,4463),
-                                "VN_camelia_proxy_opth"=rep(0,4463),
-                                "FN_camelia_proxy_opth"=rep(0,4463),
-                                "richness_camelia_proxy_opth"=rowSums(camelia_proxy_opth),
-                                "Specificite_camelia_proxy_opth"=rep(0,4463),
-                                "Sensibilite_camelia_proxy_opth"=rep(0,4463),
-                                "Precision_camelia_proxy_opth"=rep(0,4463),
-                                "Sorensen_camelia_proxy_opth"=rep(0,4463))
+# Create a dataframe to store evaluation metrics for each site
+figure_sites_opth <- data.frame(
+  ID = rownames(survey_obs),
+  richness = rowSums(survey_obs),
+  richness_sdm_opth = rowSums(sdm_opth),
+  richness_camelia_mem_opth = rowSums(camelia_mem_opth),
+  richness_camelia_obs_opth = rowSums(camelia_obs_opth),
+  richness_camelia_proxy_opth = rowSums(camelia_proxy_opth)
+)
 
-for (i in 1:4463){
-  VP_sdm_opth=length(which(which(sdm_opth[i,]==1) %in% which(survey_obs[i,]==1)))
-  FP_sdm_opth=length(which(which(sdm_opth[i,]==1) %in% which(survey_obs[i,]==0)))
-  VN_sdm_opth=length(which(which(sdm_opth[i,]==0) %in% which(survey_obs[i,]==0)))
-  FN_sdm_opth=length(which(which(sdm_opth[i,]==0) %in% which(survey_obs[i,]==1)))
-  figure_sites_opth$VP_sdm_opth[i]=VP_sdm_opth
-  figure_sites_opth$FP_sdm_opth[i]=FP_sdm_opth
-  figure_sites_opth$VN_sdm_opth[i]=VN_sdm_opth
-  figure_sites_opth$FN_sdm_opth[i]=FN_sdm_opth
-  figure_sites_opth$Sensibilite_sdm_opth[i]=VP_sdm_opth/(VP_sdm_opth+FN_sdm_opth)
-  figure_sites_opth$Specificite_sdm_opth[i]=VN_sdm_opth/(VN_sdm_opth+FP_sdm_opth)
-  figure_sites_opth$Precision_sdm_opth[i]=VP_sdm_opth/(VP_sdm_opth+FP_sdm_opth)
-  figure_sites_opth$Sorensen_sdm_opth[i]=2*VP_sdm_opth/(2*VP_sdm_opth+FP_sdm_opth+FN_sdm_opth)
+# Define models to evaluate
+models <- list(
+  "sdm_opth" = sdm_opth,
+  "camelia_mem_opth" = camelia_mem_opth,
+  "camelia_obs_opth" = camelia_obs_opth,
+  "camelia_proxy_opth" = camelia_proxy_opth
+)
+
+# Loop through models and compute performance metrics
+for (model_name in names(models)) {
+  pred <- models[[model_name]]
   
-  VP_camelia_mem_opth=length(which(which(camelia_mem_opth[i,]==1) %in% which(survey_obs[i,]==1)))
-  FP_camelia_mem_opth=length(which(which(camelia_mem_opth[i,]==1) %in% which(survey_obs[i,]==0)))
-  VN_camelia_mem_opth=length(which(which(camelia_mem_opth[i,]==0) %in% which(survey_obs[i,]==0)))
-  FN_camelia_mem_opth=length(which(which(camelia_mem_opth[i,]==0) %in% which(survey_obs[i,]==1)))
-  figure_sites_opth$VP_camelia_mem_opth[i]=VP_camelia_mem_opth
-  figure_sites_opth$FP_camelia_mem_opth[i]=FP_camelia_mem_opth
-  figure_sites_opth$VN_camelia_mem_opth[i]=VN_camelia_mem_opth
-  figure_sites_opth$FN_camelia_mem_opth[i]=FN_camelia_mem_opth
-  figure_sites_opth$Sensibilite_camelia_mem_opth[i]=VP_camelia_mem_opth/(VP_camelia_mem_opth+FN_camelia_mem_opth)
-  figure_sites_opth$Specificite_camelia_mem_opth[i]=VN_camelia_mem_opth/(VN_camelia_mem_opth+FP_camelia_mem_opth)
-  figure_sites_opth$Precision_camelia_mem_opth[i]=VP_camelia_mem_opth/(VP_camelia_mem_opth+FP_camelia_mem_opth)
-  figure_sites_opth$Sorensen_camelia_mem_opth[i]=2*VP_camelia_mem_opth/(2*VP_camelia_mem_opth+FP_camelia_mem_opth+FN_camelia_mem_opth)
+  VP <- rowSums((pred == 1) & (survey_obs == 1)) # True Positives
+  FP <- rowSums((pred == 1) & (survey_obs == 0)) # False Positives
+  VN <- rowSums((pred == 0) & (survey_obs == 0)) # True Negatives
+  FN <- rowSums((pred == 0) & (survey_obs == 1)) # False Negatives
   
-  VP_camelia_obs_opth=length(which(which(camelia_obs_opth[i,]==1) %in% which(survey_obs[i,]==1)))
-  FP_camelia_obs_opth=length(which(which(camelia_obs_opth[i,]==1) %in% which(survey_obs[i,]==0)))
-  VN_camelia_obs_opth=length(which(which(camelia_obs_opth[i,]==0) %in% which(survey_obs[i,]==0)))
-  FN_camelia_obs_opth=length(which(which(camelia_obs_opth[i,]==0) %in% which(survey_obs[i,]==1)))
-  figure_sites_opth$VP_camelia_obs_opth[i]=VP_camelia_obs_opth
-  figure_sites_opth$FP_camelia_obs_opth[i]=FP_camelia_obs_opth
-  figure_sites_opth$VN_camelia_obs_opth[i]=VN_camelia_obs_opth
-  figure_sites_opth$FN_camelia_obs_opth[i]=FN_camelia_obs_opth
-  figure_sites_opth$Sensibilite_camelia_obs_opth[i]=VP_camelia_obs_opth/(VP_camelia_obs_opth+FN_camelia_obs_opth)
-  figure_sites_opth$Specificite_camelia_obs_opth[i]=VN_camelia_obs_opth/(VN_camelia_obs_opth+FP_camelia_obs_opth)
-  figure_sites_opth$Precision_camelia_obs_opth[i]=VP_camelia_obs_opth/(VP_camelia_obs_opth+FP_camelia_obs_opth)
-  figure_sites_opth$Sorensen_camelia_obs_opth[i]=2*VP_camelia_obs_opth/(2*VP_camelia_obs_opth+FP_camelia_obs_opth+FN_camelia_obs_opth)
-  
-  VP_camelia_proxy_opth=length(which(which(camelia_proxy_opth[i,]==1) %in% which(survey_obs[i,]==1)))
-  FP_camelia_proxy_opth=length(which(which(camelia_proxy_opth[i,]==1) %in% which(survey_obs[i,]==0)))
-  VN_camelia_proxy_opth=length(which(which(camelia_proxy_opth[i,]==0) %in% which(survey_obs[i,]==0)))
-  FN_camelia_proxy_opth=length(which(which(camelia_proxy_opth[i,]==0) %in% which(survey_obs[i,]==1)))
-  figure_sites_opth$VP_camelia_proxy_opth[i]=VP_camelia_proxy_opth
-  figure_sites_opth$FP_camelia_proxy_opth[i]=FP_camelia_proxy_opth
-  figure_sites_opth$VN_camelia_proxy_opth[i]=VN_camelia_proxy_opth
-  figure_sites_opth$FN_camelia_proxy_opth[i]=FN_camelia_proxy_opth
-  figure_sites_opth$Sensibilite_camelia_proxy_opth[i]=VP_camelia_proxy_opth/(VP_camelia_proxy_opth+FN_camelia_proxy_opth)
-  figure_sites_opth$Specificite_camelia_proxy_opth[i]=VN_camelia_proxy_opth/(VN_camelia_proxy_opth+FP_camelia_proxy_opth)
-  figure_sites_opth$Precision_camelia_proxy_opth[i]=VP_camelia_proxy_opth/(VP_camelia_proxy_opth+FP_camelia_proxy_opth)
-  figure_sites_opth$Sorensen_camelia_proxy_opth[i]=2*VP_camelia_proxy_opth/(2*VP_camelia_proxy_opth+FP_camelia_proxy_opth+FN_camelia_proxy_opth)
-  print(i)
+  # Add results to the dataframe
+  figure_sites_opth[[paste0("VP_", model_name)]] <- VP
+  figure_sites_opth[[paste0("FP_", model_name)]] <- FP
+  figure_sites_opth[[paste0("VN_", model_name)]] <- VN
+  figure_sites_opth[[paste0("FN_", model_name)]] <- FN
+  figure_sites_opth[[paste0("Sensitivity_", model_name)]] <- VP / (VP + FN) # Recall
+  figure_sites_opth[[paste0("Specificity_", model_name)]] <- VN / (VN + FP)
+  figure_sites_opth[[paste0("Precision_", model_name)]] <- VP / (VP + FP)
+  figure_sites_opth[[paste0("Sorensen_", model_name)]] <- 2 * VP / (2 * VP + FP + FN)
 }
 
-figure_sites_opth <- left_join(figure_sites_opth, CM_tot_opth, by="ID")
-figure_sites_opth <- left_join(figure_sites_opth, CSTD_tot_opth, by="ID")
+# Merge community indices data
+figure_sites_opth <- left_join(figure_sites_opth, CM_tot_opth, by = "ID")
+colnames(figure_sites_opth)[(ncol(figure_sites_opth) - length(colnames(CM_tot_opth)) + 2):ncol(figure_sites_opth)] <- paste0("CM_", colnames(figure_sites_opth)[(ncol(figure_sites_opth) - length(colnames(CM_tot_opth)) + 2):ncol(figure_sites_opth)])
 
+figure_sites_opth <- left_join(figure_sites_opth, CSTD_tot_opth, by = "ID")
+colnames(figure_sites_opth)[(ncol(figure_sites_opth) - length(colnames(CSTD_tot_opth)) + 2):ncol(figure_sites_opth)] <- paste0("CSTD_", colnames(figure_sites_opth)[(ncol(figure_sites_opth) - length(colnames(CSTD_tot_opth)) + 2):ncol(figure_sites_opth)])
 
-data_richness_precision_opth=data.frame("ID"=rep(figure_sites_opth$ID,4),
-                                        "log(rich_pred/rich_obs)"=c(log(figure_sites_opth$richness_sdm_opth/figure_sites_opth$richness),
-                                                                    log(figure_sites_opth$richness_camelia_mem_opth/figure_sites_opth$richness),
-                                                                    log(figure_sites_opth$richness_camelia_obs_opth/figure_sites_opth$richness),
-                                                                    log(figure_sites_opth$richness_camelia_proxy_opth/figure_sites_opth$richness)),
-                                        "Precision"=c(figure_sites_opth$Precision_sdm_opth, figure_sites_opth$Precision_camelia_mem_opth_opth, figure_sites_opth$Precision_camelia_obs_opth, figure_sites_opth$Precision_camelia_proxy_opth),
-                                        "Sorensen"=c(figure_sites_opth$Sorensen_sdm_opth, figure_sites_opth$Sorensen_camelia_mem_opth_opth, figure_sites_opth$Sorensen_camelia_obs_opth, figure_sites_opth$Sorensen_camelia_proxy_opth),
-                                        "PLH abs((CSTD obs - CSTD pred)/CSTD obs)"=c(abs(figure_sites_opth$CSTD_PLH_obs-figure_sites_opth$CSTD_PLH_sdm_opth)/figure_sites_opth$CSTD_PLH_obs,
-                                                                                     abs(figure_sites_opth$CSTD_PLH_obs-figure_sites_opth$CSTD_PLH_camelia_mem_opth_opth)/figure_sites_opth$CSTD_PLH_obs,
-                                                                                     abs(figure_sites_opth$CSTD_PLH_obs-figure_sites_opth$CSTD_PLH_camelia_obs_opth)/figure_sites_opth$CSTD_PLH_obs,
-                                                                                     abs(figure_sites_opth$CSTD_PLH_obs-figure_sites_opth$CSTD_PLH_camelia_proxy_opth)/figure_sites_opth$CSTD_PLH_obs),
-                                        "SLA abs((CSTD obs - CSTD pred)/CSTD obs)"=c(abs(figure_sites_opth$CSTD_SLA_obs-figure_sites_opth$CSTD_SLA_sdm_opth)/figure_sites_opth$CSTD_SLA_obs,
-                                                                                     abs(figure_sites_opth$CSTD_SLA_obs-figure_sites_opth$CSTD_SLA_camelia_mem_opth_opth)/figure_sites_opth$CSTD_SLA_obs,
-                                                                                     abs(figure_sites_opth$CSTD_SLA_obs-figure_sites_opth$CSTD_SLA_camelia_obs_opth)/figure_sites_opth$CSTD_SLA_obs,
-                                                                                     abs(figure_sites_opth$CSTD_SLA_obs-figure_sites_opth$CSTD_SLA_camelia_proxy_opth)/figure_sites_opth$CSTD_SLA_obs),
-                                        "LNC abs((CSTD obs - CSTD pred)/CSTD obs)"=c(abs(figure_sites_opth$CSTD_LNC_obs-figure_sites_opth$CSTD_LNC_sdm_opth)/figure_sites_opth$CSTD_LNC_obs,
-                                                                                     abs(figure_sites_opth$CSTD_LNC_obs-figure_sites_opth$CSTD_LNC_camelia_mem_opth_opth)/figure_sites_opth$CSTD_LNC_obs,
-                                                                                     abs(figure_sites_opth$CSTD_LNC_obs-figure_sites_opth$CSTD_LNC_camelia_obs_opth)/figure_sites_opth$CSTD_LNC_obs,
-                                                                                     abs(figure_sites_opth$CSTD_LNC_obs-figure_sites_opth$CSTD_LNC_camelia_proxy_opth)/figure_sites_opth$CSTD_LNC_obs),
-                                        "PLH abs((CM obs - CM pred)/CM obs)"=c(abs(figure_sites_opth$CM_PLH_obs-figure_sites_opth$CM_PLH_sdm_opth)/figure_sites_opth$CM_PLH_obs,
-                                                                               abs(figure_sites_opth$CM_PLH_obs-figure_sites_opth$CM_PLH_camelia_mem_opth_opth)/figure_sites_opth$CM_PLH_obs,
-                                                                               abs(figure_sites_opth$CM_PLH_obs-figure_sites_opth$CM_PLH_camelia_obs_opth)/figure_sites_opth$CM_PLH_obs,
-                                                                               abs(figure_sites_opth$CM_PLH_obs-figure_sites_opth$CM_PLH_camelia_proxy_opth)/figure_sites_opth$CM_PLH_obs),
-                                        "SLA abs((CM obs - CM pred)/CM obs)"=c(abs(figure_sites_opth$CM_SLA_obs-figure_sites_opth$CM_SLA_sdm_opth)/figure_sites_opth$CM_SLA_obs,
-                                                                               abs(figure_sites_opth$CM_SLA_obs-figure_sites_opth$CM_SLA_camelia_mem_opth_opth)/figure_sites_opth$CM_SLA_obs,
-                                                                               abs(figure_sites_opth$CM_SLA_obs-figure_sites_opth$CM_SLA_camelia_obs_opth)/figure_sites_opth$CM_SLA_obs,
-                                                                               abs(figure_sites_opth$CM_SLA_obs-figure_sites_opth$CM_SLA_camelia_proxy_opth)/figure_sites_opth$CM_SLA_obs),
-                                        "LNC abs((CM obs - CM pred)/CM obs)"=c(abs(figure_sites_opth$CM_LNC_obs-figure_sites_opth$CM_LNC_sdm_opth)/figure_sites_opth$CM_LNC_obs,
-                                                                               abs(figure_sites_opth$CM_LNC_obs-figure_sites_opth$CM_LNC_camelia_mem_opth_opth)/figure_sites_opth$CM_LNC_obs,
-                                                                               abs(figure_sites_opth$CM_LNC_obs-figure_sites_opth$CM_LNC_camelia_obs_opth)/figure_sites_opth$CM_LNC_obs,
-                                                                               abs(figure_sites_opth$CM_LNC_obs-figure_sites_opth$CM_LNC_camelia_proxy_opth)/figure_sites_opth$CM_LNC_obs),
-                                        "Models"=c(rep("ssdm",4463),rep("camelia mem",4463),rep("camelia obs",4463),rep("camelia proxy",4463))
+data_richness_precision_opth <- data.frame(
+  ID = rep(figure_sites_opth$ID, 4),
+  `log(rich_pred/rich_obs)` = c(
+    log(figure_sites_opth$richness_sdm_opth / figure_sites_opth$richness),
+    log(figure_sites_opth$richness_camelia_mem_opth / figure_sites_opth$richness),
+    log(figure_sites_opth$richness_camelia_obs_opth / figure_sites_opth$richness),
+    log(figure_sites_opth$richness_camelia_proxy_opth / figure_sites_opth$richness)
+  ),
+  Precision = c(
+    figure_sites_opth$Precision_sdm_opth,
+    figure_sites_opth$Precision_camelia_mem_opth,
+    figure_sites_opth$Precision_camelia_obs_opth,
+    figure_sites_opth$Precision_camelia_proxy_opth
+  ),
+  Sorensen = c(
+    figure_sites_opth$Sorensen_sdm_opth,
+    figure_sites_opth$Sorensen_camelia_mem_opth,
+    figure_sites_opth$Sorensen_camelia_obs_opth,
+    figure_sites_opth$Sorensen_camelia_proxy_opth
+  ),
+  `PLH abs((CSTD obs - CSTD pred)/CSTD obs)` = c(
+    abs(figure_sites_opth$CSTD_PLH_obs - figure_sites_opth$CSTD_PLH_sdm_opth) / figure_sites_opth$CSTD_PLH_obs,
+    abs(figure_sites_opth$CSTD_PLH_obs - figure_sites_opth$CSTD_PLH_camelia_mem_opth) / figure_sites_opth$CSTD_PLH_obs,
+    abs(figure_sites_opth$CSTD_PLH_obs - figure_sites_opth$CSTD_PLH_camelia_obs_opth) / figure_sites_opth$CSTD_PLH_obs,
+    abs(figure_sites_opth$CSTD_PLH_obs - figure_sites_opth$CSTD_PLH_camelia_proxy_opth) / figure_sites_opth$CSTD_PLH_obs
+  ),
+  `SLA abs((CSTD obs - CSTD pred)/CSTD obs)` = c(
+    abs(figure_sites_opth$CSTD_SLA_obs - figure_sites_opth$CSTD_SLA_sdm_opth) / figure_sites_opth$CSTD_SLA_obs,
+    abs(figure_sites_opth$CSTD_SLA_obs - figure_sites_opth$CSTD_SLA_camelia_mem_opth) / figure_sites_opth$CSTD_SLA_obs,
+    abs(figure_sites_opth$CSTD_SLA_obs - figure_sites_opth$CSTD_SLA_camelia_obs_opth) / figure_sites_opth$CSTD_SLA_obs,
+    abs(figure_sites_opth$CSTD_SLA_obs - figure_sites_opth$CSTD_SLA_camelia_proxy_opth) / figure_sites_opth$CSTD_SLA_obs
+  ),
+  `LNC abs((CSTD obs - CSTD pred)/CSTD obs)` = c(
+    abs(figure_sites_opth$CSTD_LNC_obs - figure_sites_opth$CSTD_LNC_sdm_opth) / figure_sites_opth$CSTD_LNC_obs,
+    abs(figure_sites_opth$CSTD_LNC_obs - figure_sites_opth$CSTD_LNC_camelia_mem_opth) / figure_sites_opth$CSTD_LNC_obs,
+    abs(figure_sites_opth$CSTD_LNC_obs - figure_sites_opth$CSTD_LNC_camelia_obs_opth) / figure_sites_opth$CSTD_LNC_obs,
+    abs(figure_sites_opth$CSTD_LNC_obs - figure_sites_opth$CSTD_LNC_camelia_proxy_opth) / figure_sites_opth$CSTD_LNC_obs
+  ),
+  `PLH abs((CM obs - CM pred)/CM obs)` = c(
+    abs(figure_sites_opth$CM_PLH_obs - figure_sites_opth$CM_PLH_sdm_opth) / figure_sites_opth$CM_PLH_obs,
+    abs(figure_sites_opth$CM_PLH_obs - figure_sites_opth$CM_PLH_camelia_mem_opth) / figure_sites_opth$CM_PLH_obs,
+    abs(figure_sites_opth$CM_PLH_obs - figure_sites_opth$CM_PLH_camelia_obs_opth) / figure_sites_opth$CM_PLH_obs,
+    abs(figure_sites_opth$CM_PLH_obs - figure_sites_opth$CM_PLH_camelia_proxy_opth) / figure_sites_opth$CM_PLH_obs
+  ),
+  `SLA abs((CM obs - CM pred)/CM obs)` = c(
+    abs(figure_sites_opth$CM_SLA_obs - figure_sites_opth$CM_SLA_sdm_opth) / figure_sites_opth$CM_SLA_obs,
+    abs(figure_sites_opth$CM_SLA_obs - figure_sites_opth$CM_SLA_camelia_mem_opth) / figure_sites_opth$CM_SLA_obs,
+    abs(figure_sites_opth$CM_SLA_obs - figure_sites_opth$CM_SLA_camelia_obs_opth) / figure_sites_opth$CM_SLA_obs,
+    abs(figure_sites_opth$CM_SLA_obs - figure_sites_opth$CM_SLA_camelia_proxy_opth) / figure_sites_opth$CM_SLA_obs
+  ),
+  `LNC abs((CM obs - CM pred)/CM obs)` = c(
+    abs(figure_sites_opth$CM_LNC_obs - figure_sites_opth$CM_LNC_sdm_opth) / figure_sites_opth$CM_LNC_obs,
+    abs(figure_sites_opth$CM_LNC_obs - figure_sites_opth$CM_LNC_camelia_mem_opth) / figure_sites_opth$CM_LNC_obs,
+    abs(figure_sites_opth$CM_LNC_obs - figure_sites_opth$CM_LNC_camelia_obs_opth) / figure_sites_opth$CM_LNC_obs,
+    abs(figure_sites_opth$CM_LNC_obs - figure_sites_opth$CM_LNC_camelia_proxy_opth) / figure_sites_opth$CM_LNC_obs
+  ),
+  Models = rep(c("SSDM", "CAMELIA MEM", "CAMELIA OBS", "CAMELIA PROXY"), each = nrow(figure_sites_opth))
 )
-data_richness_precision_opth$Models <- factor(data_richness_precision_opth$Models, levels = c("SSDM","CAMELIA MEM", "CAMELIA OBS", "CAMELIA PROXY"))
+
+data_richness_precision_opth$Models <- factor(data_richness_precision_opth$Models, levels = c("SSDM", "CAMELIA MEM", "CAMELIA OBS", "CAMELIA PROXY"))
 
 ### CM
 plot2 <- ggplot(data=data_richness_precision_opth, aes(x=Models, y=data_richness_precision_opth$PLH.abs..CM.obs...CM.pred..CM.obs., fill=Models))+
@@ -1295,3 +1192,49 @@ eval_species_prr$TSS_CAMELIA_MEM = eval_species_prr$Specificite_CAMELIA_MEM+eval
 eval_species_prr$TSS_CAMELIA_OBS = eval_species_prr$Specificite_CAMELIA_OBS+eval_species_prr$Sensibilite_CAMELIA_OBS-1
 eval_species_prr$TSS_CAMELIA_PROXY = eval_species_prr$Specificite_CAMELIA_PROXY+eval_species_prr$Sensibilite_CAMELIA_PROXY-1
 
+table_S4 <- data.frame("Stacking processus"=c(rep("Probability", 2), rep("Binarised by TSS threshold", 4), rep("Binarised by PRR",4)),
+                       "Indices" = c("mean AUC", "mean pr-AUC", rep(c("mean TSS", "mean sensibility", "mean specificity", "mean precision"),2)),
+                       "S-SDM"=c(mean(AUC_raw$AUC[which(AUC_raw$Approach=="SSDM")]), 
+                                 mean(AUC_raw$pr.AUC[which(AUC_raw$Approach=="SSDM")]),
+                                 mean(eval_species_opth$TSS_SSDM, na.rm = TRUE),
+                                 mean(eval_species_opth$Sensibilite_SSDM, na.rm = TRUE),
+                                 mean(eval_species_opth$Specificite_SSDM, na.rm = TRUE),
+                                 mean(eval_species_opth$Precision_SSDM, na.rm = TRUE),
+                                 mean(eval_species_prr$TSS_SSDM, na.rm = TRUE),
+                                 mean(eval_species_prr$Sensibilite_SSDM, na.rm = TRUE),
+                                 mean(eval_species_prr$Specificite_SSDM, na.rm = TRUE),
+                                 mean(eval_species_prr$Precision_SSDM, na.rm = TRUE)),
+                       "CAMELIA MEM"=c(mean(AUC_raw$AUC[which(AUC_raw$Approach=="CAMELIA MEM")]), 
+                                 mean(AUC_raw$pr.AUC[which(AUC_raw$Approach=="CAMELIA MEM")]),
+                                 mean(eval_species_opth$TSS_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_opth$Sensibilite_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_opth$Specificite_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_opth$Precision_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_prr$TSS_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_prr$Sensibilite_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_prr$Specificite_CAMELIA_MEM, na.rm = TRUE),
+                                 mean(eval_species_prr$Precision_CAMELIA_MEM, na.rm = TRUE)),
+                       "CAMELIA OBS"=c(mean(AUC_raw$AUC[which(AUC_raw$Approach=="CAMELIA OBS")]), 
+                                       mean(AUC_raw$pr.AUC[which(AUC_raw$Approach=="CAMELIA OBS")]),
+                                       mean(eval_species_opth$TSS_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_opth$Sensibilite_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_opth$Specificite_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_opth$Precision_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_prr$TSS_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_prr$Sensibilite_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_prr$Specificite_CAMELIA_OBS, na.rm = TRUE),
+                                       mean(eval_species_prr$Precision_CAMELIA_OBS, na.rm = TRUE)),
+                       "CAMELIA PROXY"=c(mean(AUC_raw$AUC[which(AUC_raw$Approach=="CAMELIA PROXY")]), 
+                                       mean(AUC_raw$pr.AUC[which(AUC_raw$Approach=="CAMELIA PROXY")]),
+                                       mean(eval_species_opth$TSS_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_opth$Sensibilite_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_opth$Specificite_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_opth$Precision_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_prr$TSS_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_prr$Sensibilite_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_prr$Specificite_CAMELIA_PROXY, na.rm = TRUE),
+                                       mean(eval_species_prr$Precision_CAMELIA_PROXY, na.rm = TRUE))
+                       
+)
+
+write.csv(table_S4, file="table_S4.csv")
