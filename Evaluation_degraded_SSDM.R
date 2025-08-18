@@ -350,8 +350,8 @@ plot_fig_S7 <- function(obs, pred, lab_text, cor_column, rmse_column) {
     geom_hdr() +
     geom_point(shape = 21, alpha = 0.1) +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-    scale_color_manual(values = c("darkblue", "#2A4FAF", "#558CD3", "#81BFE7", "#ACDEEF", "#D8F6FF")) +
-    scale_fill_manual(values = c("darkblue", "#2A4FAF", "#558CD3", "#81BFE7", "#ACDEEF", "#D8F6FF")) +
+    scale_color_manual(values = c("darkblue", "darkblue", "darkblue", "darkblue", "darkblue", "darkblue")) +
+    scale_fill_manual(values = c("darkblue", "darkblue", "darkblue", "darkblue", "darkblue", "darkblue")) +
     facet_wrap(vars(Models), nrow = 1) +
     ylab(paste0("Observed ",lab_text)) +
     xlab(paste0("Predicted ",lab_text)) +
@@ -470,8 +470,8 @@ plot_fig_S8 <- function(obs, pred, lab_text, cor_column, rmse_column) {
     geom_hdr() +
     geom_point(shape = 21, alpha = 0.1) +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
-    scale_color_manual(values = c("darkblue", "#2A4FAF", "#558CD3", "#81BFE7", "#ACDEEF", "#D8F6FF")) +
-    scale_fill_manual(values = c("darkblue", "#2A4FAF", "#558CD3", "#81BFE7", "#ACDEEF", "#D8F6FF")) +
+    scale_color_manual(values = c("darkblue", "darkblue", "darkblue", "darkblue", "darkblue", "darkblue")) +
+    scale_fill_manual(values = c("darkblue", "darkblue", "darkblue", "darkblue", "darkblue", "darkblue")) +
     facet_wrap(vars(Models), nrow = 1) +
     ylab(paste0("Observed ",lab_text)) +
     xlab(paste0("Predicted ",lab_text)) +

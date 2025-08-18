@@ -78,8 +78,8 @@ camelia_obs_opth <- load_camelia_predictions("OBS", "opth")
 camelia_obs_prr <- prr(camelia_obs_raw, SR_mem)
 
 ### camelia mem
-camelia_mem_raw <- load_camelia_predictions("mem", "raw")
-camelia_mem_opth <- load_camelia_predictions("mem", "opth")
+camelia_mem_raw <- load_camelia_predictions("test_1_10mem", "raw")
+camelia_mem_opth <- load_camelia_predictions("test_1_10mem", "opth")
 camelia_mem_prr <- prr(camelia_mem_raw, SR_mem)
 
 ### camelia proxy
@@ -238,14 +238,14 @@ combined_plot <- SR_raw / CM_raw / CSTD_raw +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
-ggsave("figure_1.pdf", 
+ggsave("figure_1_test_1_10.pdf", 
        plot = combined_plot, 
        device = "pdf", 
        width = 8.27,
        height = 11.69,
        dpi = 300)
 
-## -- FIGURE S1 -- ##
+## -- FIGURE S2 -- ##
 
 # Create a dataframe for MEM and PROXY predictions
 figure_comm <- data.frame(
@@ -270,7 +270,7 @@ cor_metrics_comm <- data.frame(
   RMSE_SR = sapply(list(SR_tot_raw$SR_mem, SR_tot_raw$SR_proxy), function(x) rmse(SR_tot_raw$SR_obs, x))
 )
 
-plot_fig_S1 <- function(obs, pred, lab_text, cor_column, rmse_column) {
+plot_fig_S2 <- function(obs, pred, lab_text, cor_column, rmse_column) {
   ggplot(figure_comm, aes(y = obs, x = pred, color = Models, fill = Models)) +
     geom_hdr() +
     geom_point(shape = 21, alpha = 0.1) +
@@ -293,17 +293,17 @@ plot_fig_S1 <- function(obs, pred, lab_text, cor_column, rmse_column) {
                color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
 }
 # Generate plots for Figure S1
-CM_comm <- plot_fig_S1(figure_comm$obs_CM, figure_comm$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
-CSTD_comm <- plot_fig_S1(figure_comm$obs_CSTD, figure_comm$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
-SR_comm <- plot_fig_S1(figure_comm$obs_SR, figure_comm$Pred_SR, "SR", "R2_SR", "RMSE_SR") 
+CM_comm <- plot_fig_S2(figure_comm$obs_CM, figure_comm$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
+CSTD_comm <- plot_fig_S2(figure_comm$obs_CSTD, figure_comm$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
+SR_comm <- plot_fig_S2(figure_comm$obs_SR, figure_comm$Pred_SR, "SR", "R2_SR", "RMSE_SR") 
 
 # Combine plots
 comm_plot <- SR_comm / CM_comm / CSTD_comm +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
-# Save Figure S1
-ggsave("figure_S1.pdf",
+# Save Figure S2
+ggsave("figure_S2.pdf",
        plot = comm_plot,
        device = "pdf",
        width = 8.27,
@@ -841,7 +841,7 @@ ggsave("figure_2.pdf", plot = plot_full, width = 8.27, height = 11.69, units = "
 
 #### -- Supp Mat -- ####
 # CORRELATIONS community indices:
-table_S2 <- data.frame("Indices"=c(rep('CM PLH',5),
+table_S3 <- data.frame("Indices"=c(rep('CM PLH',5),
                                    rep('CM SLA',5),
                                    rep('CM LNC',5),
                                    rep('CSTD PLH',5),
@@ -1071,22 +1071,22 @@ table_S2 <- data.frame("Indices"=c(rep('CM PLH',5),
                                                            rmse(SR_tot_prr$SR_obs, SR_tot_prr$SR_camelia_mem_prr),
                                                            rmse(SR_tot_prr$SR_obs, SR_tot_prr$SR_camelia_obs_prr),
                                                            rmse(SR_tot_prr$SR_obs, SR_tot_prr$SR_camelia_proxy_prr)))
-write.csv(table_S2, file="table_S2.csv")
+write.csv(table_S3, file="table_S3.csv")
 # Species predictions evaluation : 
 ## RAW
 AUC_raw <- data.frame("Species"=rep(colnames(survey_obs),4), "AUC"=rep(0,831*4), "pr-AUC"=rep(0,831*4), "Approach"=c(rep("SSDM",831), rep("CAMELIA MEM",831), rep("CAMELIA OBS",831), rep("CAMELIA PROXY", 831)))
 for (i in 1:831){
   AUC_raw$AUC[i] = auc(survey_obs[,i], as.numeric(unlist(sdm_raw[,i])))
-  pr_curve <- pr.curve(survey_obs[,i], as.numeric(unlist(sdm_raw[,i])))
+  pr_curve <- pr.curve(as.numeric(unlist(sdm_raw[,i]))[survey_obs[,i]==1],as.numeric(unlist(sdm_raw[,i]))[survey_obs[,i]==0])
   AUC_raw$pr.AUC[i]= pr_curve$auc.integral
   AUC_raw$AUC[831+i]=auc(survey_obs[,i], camelia_mem_raw[,i])
-  pr_curve <- pr.curve(survey_obs[,i], camelia_mem_raw[,i])
+  pr_curve <- pr.curve(as.numeric(unlist(camelia_mem_raw[,i]))[survey_obs[,i]==1],as.numeric(unlist(camelia_mem_raw[,i]))[survey_obs[,i]==0])
   AUC_raw$pr.AUC[831+i]= pr_curve$auc.integral
   AUC_raw$AUC[831*2+i]=auc(survey_obs[,i], camelia_obs_raw[,i])
-  pr_curve <- pr.curve(survey_obs[,i], camelia_obs_raw[,i])
+  pr_curve <- pr.curve(as.numeric(unlist(camelia_obs_raw[,i]))[survey_obs[,i]==1],as.numeric(unlist(camelia_obs_raw[,i]))[survey_obs[,i]==0])
   AUC_raw$pr.AUC[831*2+i]= pr_curve$auc.integral
   AUC_raw$AUC[831*3+i]=auc(survey_obs[,i], camelia_proxy_raw[,i])
-  pr_curve <- pr.curve(survey_obs[,i], camelia_proxy_raw[,i])
+  pr_curve <- pr.curve(as.numeric(unlist(camelia_proxy_raw[,i]))[survey_obs[,i]==1],as.numeric(unlist(camelia_proxy_raw[,i]))[survey_obs[,i]==0])
   AUC_raw$pr.AUC[831*3+i]= pr_curve$auc.integral
   print(i)
 }
@@ -1192,7 +1192,7 @@ eval_species_prr$TSS_CAMELIA_MEM = eval_species_prr$Specificite_CAMELIA_MEM+eval
 eval_species_prr$TSS_CAMELIA_OBS = eval_species_prr$Specificite_CAMELIA_OBS+eval_species_prr$Sensibilite_CAMELIA_OBS-1
 eval_species_prr$TSS_CAMELIA_PROXY = eval_species_prr$Specificite_CAMELIA_PROXY+eval_species_prr$Sensibilite_CAMELIA_PROXY-1
 
-table_S4 <- data.frame("Stacking processus"=c(rep("Probability", 2), rep("Binarised by TSS threshold", 4), rep("Binarised by PRR",4)),
+table_S5 <- data.frame("Stacking processus"=c(rep("Probability", 2), rep("Binarised by TSS threshold", 4), rep("Binarised by PRR",4)),
                        "Indices" = c("mean AUC", "mean pr-AUC", rep(c("mean TSS", "mean sensibility", "mean specificity", "mean precision"),2)),
                        "S-SDM"=c(mean(AUC_raw$AUC[which(AUC_raw$Approach=="SSDM")]), 
                                  mean(AUC_raw$pr.AUC[which(AUC_raw$Approach=="SSDM")]),
@@ -1237,4 +1237,4 @@ table_S4 <- data.frame("Stacking processus"=c(rep("Probability", 2), rep("Binari
                        
 )
 
-write.csv(table_S4, file="table_S4.csv")
+write.csv(table_S5, file="table_S5.csv")
