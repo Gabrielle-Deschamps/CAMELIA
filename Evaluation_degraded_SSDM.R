@@ -272,7 +272,7 @@ SR_tot_opth <- left_join(indices_obs[[idx]], indices_sdm_degrad_1_opth[[idx]], b
   left_join(indices_camelia_degrad_0_opth[[idx]], by = "ID") %>%
   left_join(SR_mem, by = "ID")
 
-#### -- FIGURE S7 -- ####
+#### -- FIGURE S2 -- ####
 # Create a dataframe containing observed and predicted values for different models
 figure_raw <- data.frame("obs_CM"=rep(CM_tot_raw$PLH_obs,6),
                          "Pred_CM"=c(CM_tot_raw$PLH_sdm_degrad_0,
@@ -345,7 +345,7 @@ cor_metrics <- data.frame(
                         SR_tot_raw$SR_sdm_degrad_1), function(x) rmse(SR_tot_raw$SR_obs, x))
 )
 
-plot_fig_S7 <- function(obs, pred, lab_text, cor_column, rmse_column) {
+plot_fig_S2 <- function(obs, pred, lab_text, cor_column, rmse_column) {
   ggplot(figure_raw, aes(y = obs, x = pred, color = Models, fill = Models)) +
     geom_hdr() +
     geom_point(shape = 21, alpha = 0.1) +
@@ -370,29 +370,29 @@ plot_fig_S7 <- function(obs, pred, lab_text, cor_column, rmse_column) {
 }
 
 # Generate plots
-CM_raw <- plot_fig_S7(figure_raw$obs_CM, figure_raw$Pred_CM, "CM plant height", "R2_CM", "RMSE_CM")
-CSTD_raw <- plot_fig_S7(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD plant height", "R2_CSTD", "RMSE_CSTD")
-SR_raw <- plot_fig_S7(figure_raw$obs_SR, figure_raw$Pred_SR, "Species Richness", "R2_SR", "RMSE_SR")
+CM_raw <- plot_fig_S2(figure_raw$obs_CM, figure_raw$Pred_CM, "CM plant height", "R2_CM", "RMSE_CM")
+CSTD_raw <- plot_fig_S2(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD plant height", "R2_CSTD", "RMSE_CSTD")
+SR_raw <- plot_fig_S2(figure_raw$obs_SR, figure_raw$Pred_SR, "Species Richness", "R2_SR", "RMSE_SR")
 
 # Combine plots
 combined_plot <- SR_raw / CM_raw / CSTD_raw +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
-ggsave("figure_S7_sdm_degraded_predictions.pdf", 
+ggsave("figure_S2_sdm_degraded_predictions.pdf", 
        plot = combined_plot, 
        device = "pdf", 
        width = 8.27,
        height = 11.69,
        dpi = 300)
 
-ggsave("figure_S7_sdm_degraded_predictions.png", 
+ggsave("figure_S2_sdm_degraded_predictions.png", 
        plot = combined_plot, 
        width = 8.27,
        height = 11.69,
        dpi = 300)
 
-#### -- FIGURE S8 -- ####
+#### -- FIGURE S3 -- ####
 # Create a dataframe containing observed and predicted with camelia values for different models
 figure_raw <- data.frame("obs_CM"=rep(CM_tot_raw$PLH_obs,6),
                          "Pred_CM"=c(CM_tot_raw$PLH_camelia_degrad_0_raw,
@@ -465,7 +465,7 @@ cor_metrics <- data.frame(
                         SR_tot_raw$SR_camelia_degrad_1_raw), function(x) rmse(SR_tot_raw$SR_obs, x))
 )
 
-plot_fig_S8 <- function(obs, pred, lab_text, cor_column, rmse_column) {
+plot_fig_S3 <- function(obs, pred, lab_text, cor_column, rmse_column) {
   ggplot(figure_raw, aes(y = obs, x = pred, color = Models, fill = Models)) +
     geom_hdr() +
     geom_point(shape = 21, alpha = 0.1) +
@@ -490,23 +490,23 @@ plot_fig_S8 <- function(obs, pred, lab_text, cor_column, rmse_column) {
 }
 
 # Generate plots
-CM_raw <- plot_fig_S8(figure_raw$obs_CM, figure_raw$Pred_CM, "CM plant height", "R2_CM", "RMSE_CM")
-CSTD_raw <- plot_fig_S8(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD plant height", "R2_CSTD", "RMSE_CSTD")
-SR_raw <- plot_fig_S8(figure_raw$obs_SR, figure_raw$Pred_SR, "Species Richness", "R2_SR", "RMSE_SR")
+CM_raw <- plot_fig_S3(figure_raw$obs_CM, figure_raw$Pred_CM, "CM plant height", "R2_CM", "RMSE_CM")
+CSTD_raw <- plot_fig_S3(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD plant height", "R2_CSTD", "RMSE_CSTD")
+SR_raw <- plot_fig_S3(figure_raw$obs_SR, figure_raw$Pred_SR, "Species Richness", "R2_SR", "RMSE_SR")
 
 # Combine plots
 combined_plot <- SR_raw / CM_raw / CSTD_raw +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
-ggsave("figure_S8_camelia_degraded_predictions.pdf", 
+ggsave("figure_S3_camelia_degraded_predictions.pdf", 
        plot = combined_plot, 
        device = "pdf", 
        width = 8.27,
        height = 11.69,
        dpi = 300)
 
-ggsave("figure_S8_camelia_degraded_predictions.png", 
+ggsave("figure_S3_camelia_degraded_predictions.png", 
        plot = combined_plot, 
        width = 8.27,
        height = 11.69,
@@ -732,7 +732,7 @@ eval_species_opth$TSS_CAMELIA_SDM_0.4 = eval_species_opth$Specificite_CAMELIA_SD
 eval_species_opth$TSS_CAMELIA_SDM_0.2 = eval_species_opth$Specificite_CAMELIA_SDM_0.2+eval_species_opth$Sensibilite_CAMELIA_SDM_0.2-1
 eval_species_opth$TSS_CAMELIA_SDM_0 = eval_species_opth$Specificite_CAMELIA_SDM_0+eval_species_opth$Sensibilite_CAMELIA_SDM_0-1
 
-table_S4 <- data.frame(
+table_S2 <- data.frame(
   "Stacking processus" = c(rep("Probability", 2),rep('Binazised by TSS threshold', 4)),
   "Indices" = c("mean AUC", "mean pr-AUC", "Sensibilite", "Specificite", "Precision", "TSS"),
   
@@ -836,4 +836,4 @@ table_S4 <- data.frame(
 )
 
 
-write.csv(table_S4, file="table_S9_species_predictions.csv")
+write.csv(table_S2, file="table_S2_species_predictions.csv")

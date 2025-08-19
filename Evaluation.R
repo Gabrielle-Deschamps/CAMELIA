@@ -78,8 +78,8 @@ camelia_obs_opth <- load_camelia_predictions("OBS", "opth")
 camelia_obs_prr <- prr(camelia_obs_raw, SR_mem)
 
 ### camelia mem
-camelia_mem_raw <- load_camelia_predictions("test_1_10mem", "raw")
-camelia_mem_opth <- load_camelia_predictions("test_1_10mem", "opth")
+camelia_mem_raw <- load_camelia_predictions("MEM", "raw")
+camelia_mem_opth <- load_camelia_predictions("MEM", "opth")
 camelia_mem_prr <- prr(camelia_mem_raw, SR_mem)
 
 ### camelia proxy
@@ -229,23 +229,23 @@ plot_fig_1 <- function(obs, pred, lab_text, cor_column, rmse_column) {
 }
 
 # Generate plots
-CM_raw <- plot_fig_1(figure_raw$obs_CM, figure_raw$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
-CSTD_raw <- plot_fig_1(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
-SR_raw <- plot_fig_1(figure_raw$obs_SR, figure_raw$Pred_SR, "SR", "R2_SR", "RMSE_SR")
+CM_raw <- plot_fig_1(figure_raw$obs_CM, figure_raw$Pred_CM, "CM plant height", "R2_CM", "RMSE_CM")
+CSTD_raw <- plot_fig_1(figure_raw$obs_CSTD, figure_raw$Pred_CSTD, "CSTD plant height", "R2_CSTD", "RMSE_CSTD")
+SR_raw <- plot_fig_1(figure_raw$obs_SR, figure_raw$Pred_SR, "Species Richness", "R2_SR", "RMSE_SR")
 
 # Combine plots
 combined_plot <- SR_raw / CM_raw / CSTD_raw +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
-ggsave("figure_1_test_1_10.pdf", 
+ggsave("figure_3.pdf", 
        plot = combined_plot, 
        device = "pdf", 
        width = 8.27,
        height = 11.69,
        dpi = 300)
 
-## -- FIGURE S2 -- ##
+## -- FIGURE S4 -- ##
 
 # Create a dataframe for MEM and PROXY predictions
 figure_comm <- data.frame(
@@ -270,7 +270,7 @@ cor_metrics_comm <- data.frame(
   RMSE_SR = sapply(list(SR_tot_raw$SR_mem, SR_tot_raw$SR_proxy), function(x) rmse(SR_tot_raw$SR_obs, x))
 )
 
-plot_fig_S2 <- function(obs, pred, lab_text, cor_column, rmse_column) {
+plot_fig_S4 <- function(obs, pred, lab_text, cor_column, rmse_column) {
   ggplot(figure_comm, aes(y = obs, x = pred, color = Models, fill = Models)) +
     geom_hdr() +
     geom_point(shape = 21, alpha = 0.1) +
@@ -293,17 +293,17 @@ plot_fig_S2 <- function(obs, pred, lab_text, cor_column, rmse_column) {
                color = "black", fill = "white", hjust = -0.1, vjust = 1.1, size = 4, inherit.aes = FALSE)
 }
 # Generate plots for Figure S1
-CM_comm <- plot_fig_S2(figure_comm$obs_CM, figure_comm$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
-CSTD_comm <- plot_fig_S2(figure_comm$obs_CSTD, figure_comm$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
-SR_comm <- plot_fig_S2(figure_comm$obs_SR, figure_comm$Pred_SR, "SR", "R2_SR", "RMSE_SR") 
+CM_comm <- plot_fig_S4(figure_comm$obs_CM, figure_comm$Pred_CM, "CM PLH", "R2_CM", "RMSE_CM")
+CSTD_comm <- plot_fig_S4(figure_comm$obs_CSTD, figure_comm$Pred_CSTD, "CSTD PLH", "R2_CSTD", "RMSE_CSTD")
+SR_comm <- plot_fig_S4(figure_comm$obs_SR, figure_comm$Pred_SR, "SR", "R2_SR", "RMSE_SR") 
 
 # Combine plots
 comm_plot <- SR_comm / CM_comm / CSTD_comm +
   plot_layout(guides = "collect") +
   plot_annotation(tag_levels = "A")
 
-# Save Figure S2
-ggsave("figure_S2.pdf",
+# Save Figure S4
+ggsave("figure_S4.pdf",
        plot = comm_plot,
        device = "pdf",
        width = 8.27,
